@@ -1,0 +1,62 @@
+{
+	"schemaVersion": 1,
+	"id": "block-entity-tooltip",
+	"version": "${version}",
+	"name": "BET - Block'n'Entity Tooltip",
+	"description": "BET - Block’n’Entity Tooltip shows you the name of any block or entity you’re looking at in Minecraft, making it easy to identify what’s around you!",
+	"authors": [
+		"TheFRedFox"
+	],
+	"contact": {
+		"homepage": "https://thefredfox.com/",
+		"sources": "https://github.com/thefredfox/mc-block-entity-tooltip"
+	},
+	"license": "Apache-2.0",
+	"icon": "assets/block-entity-tooltip/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			{
+				"value": "com.thefredfox.minecraft.plugins.blockentitytooltip.BlockEntityTooltip",
+				"adapter": "kotlin"
+			}
+		],
+		"client": [
+			{
+				"value": "com.thefredfox.minecraft.plugins.blockentitytooltip.BlockEntityTooltipClient",
+				"adapter": "kotlin"
+			}
+		],
+		"modmenu": [
+			{
+				"value": "com.thefredfox.minecraft.plugins.blockentitytooltip.BlockEntityTooltipModMenuIntegration",
+				"adapter": "kotlin"
+			}
+		],
+		"fabric-datagen": [
+			{
+				"value": "com.thefredfox.minecraft.plugins.blockentitytooltip.BlockEntityTooltipDataGenerator",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"mixins": [
+		"block-entity-tooltip.mixins.json",
+		{
+			"config": "block-entity-tooltip.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.10",
+		"minecraft": "~1.21.4",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*",
+		"cloth-config": ">=17.0.144",
+		"modmenu": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
