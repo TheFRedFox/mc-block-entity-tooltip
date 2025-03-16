@@ -11,7 +11,6 @@ import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.LayeredDrawer
 import net.minecraft.client.render.RenderTickCounter
-import net.minecraft.client.world.ClientWorld
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
@@ -20,7 +19,6 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.EntityHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.ColorHelper
-import net.minecraft.world.RaycastContext
 import org.slf4j.LoggerFactory
 
 lateinit var CONFIG: BlockEntityTooltipModConfig
@@ -44,18 +42,16 @@ object BlockEntityTooltipClient : ClientModInitializer {
     }
 }
 
-fun getNameOfLookedAt(client: MinecraftClient, distance: Double = 5.0): String? {
-    val hitResult = client.player?.getLookingAt2(distance)
+fun getNameOfLookedAt(player: PlayerEntity, distance: Double = 5.0): String? {
+    val hitResult = player.getLookingAt(distance)
         ?: return null
-//    val hitResult = client.player?.getLookingAt(distance)
-//        ?: return null
-//    val hitResult = client.crosshairTarget
+
     when (hitResult.type) {
         HitResult.Type.BLOCK -> {
             if (CONFIG.showBlocks) {
                 val cHitResult = hitResult as BlockHitResult
                 val blockPos = cHitResult.blockPos
-                val blockState = client.world!!.getBlockState(blockPos)
+                val blockState = player.world.getBlockState(blockPos)
                 val block = blockState.block
                 return block.name.string
             } else {
@@ -90,68 +86,54 @@ class LookingAtRenderer : LayeredDrawer.Layer {
             return
         }
 
-        drawContext?.let {
-            val client = MinecraftClient.getInstance()
-
-            getNameOfLookedAt(client, CONFIG.distance)?.let { text ->
-                val textRenderer: TextRenderer = client.textRenderer
-                val textObj = Text.literal(text)
-
-                val screenWidth = drawContext.scaledWindowWidth
-                val screenHeight = drawContext.scaledWindowHeight
-
-                val padding = 4
-
-                val textWidth = textRenderer.getWidth(textObj)
-                val textHeight = textRenderer.fontHeight
-
-                val x = screenWidth - textWidth - 10
-                val y = screenHeight - textHeight - 40
-                val textColor = 0xFFFFFF
-
-                // Background box coordinates
-                val bgX1 = x - padding
-                val bgY1 = y - padding
-                val bgX2 = x + textWidth + padding
-                val bgY2 = y + textHeight + padding
-
-                val bgColor = ColorHelper.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
-
-                // Draw background box
-                drawContext.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
-
-                // Draw text on top
-                drawContext.drawTextWithShadow(textRenderer, text, x, y, textColor) // White text
-            }
-
+        if (drawContext == null) {
+            return
         }
+
+        val client = MinecraftClient.getInstance()
+            ?: return
+        val player = client.player
+            ?: return
+        val world = client.world
+            ?: return
+
+        getNameOfLookedAt(player, CONFIG.distance)?.let { text ->
+            val textRenderer: TextRenderer = client.textRenderer
+            val textObj = Text.literal(text)
+
+            val screenWidth = drawContext.scaledWindowWidth
+            val screenHeight = drawContext.scaledWindowHeight
+
+            val padding = 4
+
+            val textWidth = textRenderer.getWidth(textObj)
+            val textHeight = textRenderer.fontHeight
+
+            val x = screenWidth - textWidth - 10
+            val y = screenHeight - textHeight - 40
+            val textColor = 0xFFFFFF
+
+            // Background box coordinates
+            val bgX1 = x - padding
+            val bgY1 = y - padding
+            val bgX2 = x + textWidth + padding
+            val bgY2 = y + textHeight + padding
+
+            val bgColor = ColorHelper.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
+
+            // Draw background box
+            drawContext.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
+
+            // Draw text on top
+            drawContext.drawTextWithShadow(textRenderer, text, x, y, textColor) // White text
+        }
+
     }
-
 }
 
-fun PlayerEntity.getLookingAt(distance: Double = 5.0): BlockHitResult? {
-    // Define max distance for raycast (adjust as needed)
-    val maxDistance = distance
-
-    val cameraPos = this.getCameraPosVec(1.0f)
-    val lookVec = this.getRotationVec(1.0f)
-    val endPos = cameraPos.add(lookVec.x * maxDistance, lookVec.y * maxDistance, lookVec.z * maxDistance)
-
-    return world.raycast(
-        RaycastContext(
-            cameraPos, endPos,
-            RaycastContext.ShapeType.OUTLINE,
-            RaycastContext.FluidHandling.NONE,
-            this
-        )
-    )
-}
-
-fun PlayerEntity.getLookingAt2(distance: Double): HitResult? {
-    // 1️⃣ Perform a block raycast
+fun PlayerEntity.getLookingAt(distance: Double): HitResult? {
     val blockHit = this.raycast(distance, 0f, CONFIG.showFluids) as? BlockHitResult
 
-    // 2️⃣ Perform an entity raycast
     val startPos = this.getCameraPosVec(0f)
     val lookVec = this.getRotationVec(0f)
     val endPos = startPos.add(lookVec.multiply(distance))
@@ -167,7 +149,6 @@ fun PlayerEntity.getLookingAt2(distance: Double): HitResult? {
         }
         .minByOrNull { it.pos.squaredDistanceTo(startPos) } // Find the closest entity
 
-    // 3️⃣ Compare distances (if both exist)
     return when {
         blockHit != null && entityHit != null -> {
             val blockDist = blockHit.pos.squaredDistanceTo(startPos)
