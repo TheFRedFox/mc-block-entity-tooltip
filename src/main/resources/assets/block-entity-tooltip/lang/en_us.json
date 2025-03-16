@@ -1,4 +1,8 @@
 {
+  "text.autoconfig.block-entity-tooltip.option.enabled": "Show Tooltip",
   "text.autoconfig.block-entity-tooltip.option.distance": "Distance",
+  "text.autoconfig.block-entity-tooltip.option.showBlocks": "Show Tooltip for Blocks",
+  "text.autoconfig.block-entity-tooltip.option.showEntities": "Show Tooltip for Entities",
+  "text.autoconfig.block-entity-tooltip.option.showFluids": "Show Tooltip for Fluids",
   "text.autoconfig.block-entity-tooltip.title": "Block Entity Tooltip Settings"
 }
