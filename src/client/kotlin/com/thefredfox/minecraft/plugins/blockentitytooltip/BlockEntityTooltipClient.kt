@@ -86,6 +86,10 @@ class LookingAtRenderer : LayeredDrawer.Layer {
     }
 
     override fun render(drawContext: DrawContext?, tickCounter: RenderTickCounter?) {
+        if (!CONFIG.enabled) {
+            return
+        }
+
         drawContext?.let {
             val client = MinecraftClient.getInstance()
 

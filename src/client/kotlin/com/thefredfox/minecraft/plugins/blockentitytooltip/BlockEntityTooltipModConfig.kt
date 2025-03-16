@@ -6,6 +6,7 @@ import net.minecraft.fluid.Fluids
 
 @Config(name = "block-entity-tooltip")
 class BlockEntityTooltipModConfig(
+    val enabled: Boolean = true,
     var distance: Double = 5.0,
     var showBlocks: Boolean = true,
     var showEntities: Boolean = true,
