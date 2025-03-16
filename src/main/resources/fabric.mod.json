@@ -55,8 +55,5 @@
 		"fabric-language-kotlin": "*",
 		"cloth-config": ">=17.0.144",
 		"modmenu": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
 	}
 }
