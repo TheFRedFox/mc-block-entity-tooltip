@@ -4,15 +4,18 @@ import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.ConfigHolder
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.LayeredDrawer
 import net.minecraft.client.render.RenderTickCounter
 import net.minecraft.client.world.ClientWorld
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Identifier
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.EntityHitResult
 import net.minecraft.util.hit.HitResult
@@ -35,7 +38,9 @@ object BlockEntityTooltipClient : ClientModInitializer {
             ActionResult.SUCCESS
         }
         CONFIG = CONFIG_HOLDER.config
-        HudRenderCallback.EVENT.register(LookingAtRenderer())
+        HudLayerRegistrationCallback.EVENT.register {
+            it.addLayer(IdentifiedLayer.of(LookingAtRenderer.LAYER_IDENTIFIER, LookingAtRenderer()))
+        }
     }
 }
 
@@ -74,8 +79,13 @@ fun getNameOfLookedAt(client: MinecraftClient, distance: Double = 5.0): String? 
 
 }
 
-class LookingAtRenderer : HudRenderCallback {
-    override fun onHudRender(drawContext: DrawContext?, tickCounter: RenderTickCounter?) {
+class LookingAtRenderer : LayeredDrawer.Layer {
+    companion object {
+        @JvmStatic
+        val LAYER_IDENTIFIER: Identifier = Identifier.of("block_entity_tooltip", "looking_at")
+    }
+
+    override fun render(drawContext: DrawContext?, tickCounter: RenderTickCounter?) {
         drawContext?.let {
             val client = MinecraftClient.getInstance()
 
@@ -112,6 +122,7 @@ class LookingAtRenderer : HudRenderCallback {
 
         }
     }
+
 }
 
 fun PlayerEntity.getLookingAt(distance: Double = 5.0): BlockHitResult? {
