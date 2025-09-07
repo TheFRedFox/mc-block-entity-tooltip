@@ -4,12 +4,11 @@ import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.ConfigHolder
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.LayeredDrawer
 import net.minecraft.client.render.RenderTickCounter
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
@@ -27,6 +26,7 @@ lateinit var CONFIG_HOLDER: ConfigHolder<BlockEntityTooltipModConfig>
 
 object BlockEntityTooltipClient : ClientModInitializer {
     private val logger = LoggerFactory.getLogger(javaClass)
+    private val LAYER_IDENTIFIER: Identifier = Identifier.of("block_entity_tooltip", "looking_at")
 
     override fun onInitializeClient() {
         AutoConfig.register(BlockEntityTooltipModConfig::class.java, ::GsonConfigSerializer)
@@ -36,8 +36,11 @@ object BlockEntityTooltipClient : ClientModInitializer {
             ActionResult.SUCCESS
         }
         CONFIG = CONFIG_HOLDER.config
-        HudLayerRegistrationCallback.EVENT.register {
-            it.addLayer(IdentifiedLayer.of(LookingAtRenderer.LAYER_IDENTIFIER, LookingAtRenderer()))
+        HudElementRegistry.attachElementAfter(
+            VanillaHudElements.CROSSHAIR,
+            LAYER_IDENTIFIER
+        ) { drawContext, tickCounter ->
+            renderLookingAt(drawContext, tickCounter)
         }
     }
 }
@@ -75,59 +78,47 @@ fun getNameOfLookedAt(player: PlayerEntity, distance: Double = 5.0): String? {
 
 }
 
-class LookingAtRenderer : LayeredDrawer.Layer {
-    companion object {
-        @JvmStatic
-        val LAYER_IDENTIFIER: Identifier = Identifier.of("block_entity_tooltip", "looking_at")
+fun renderLookingAt(drawContext: DrawContext, tickCounter: RenderTickCounter) {
+    if (!CONFIG.enabled) {
+        return
     }
 
-    override fun render(drawContext: DrawContext?, tickCounter: RenderTickCounter?) {
-        if (!CONFIG.enabled) {
-            return
-        }
+    val client = MinecraftClient.getInstance()
+        ?: return
+    val player = client.player
+        ?: return
+    val world = client.world
+        ?: return
 
-        if (drawContext == null) {
-            return
-        }
+    getNameOfLookedAt(player, CONFIG.distance)?.let { text ->
+        val textRenderer = client.textRenderer
+        val textObj = Text.literal(text)
 
-        val client = MinecraftClient.getInstance()
-            ?: return
-        val player = client.player
-            ?: return
-        val world = client.world
-            ?: return
+        val screenWidth = drawContext.scaledWindowWidth
+        val screenHeight = drawContext.scaledWindowHeight
 
-        getNameOfLookedAt(player, CONFIG.distance)?.let { text ->
-            val textRenderer: TextRenderer = client.textRenderer
-            val textObj = Text.literal(text)
+        val padding = 4
 
-            val screenWidth = drawContext.scaledWindowWidth
-            val screenHeight = drawContext.scaledWindowHeight
+        val textWidth = textRenderer.getWidth(textObj)
+        val textHeight = textRenderer.fontHeight
 
-            val padding = 4
+        val x = screenWidth - textWidth - 10
+        val y = screenHeight - textHeight - 40
 
-            val textWidth = textRenderer.getWidth(textObj)
-            val textHeight = textRenderer.fontHeight
+        // Background box coordinates
+        val bgX1 = x - padding
+        val bgY1 = y - padding
+        val bgX2 = x + textWidth + padding
+        val bgY2 = y + textHeight + padding
 
-            val x = screenWidth - textWidth - 10
-            val y = screenHeight - textHeight - 40
-            val textColor = 0xFFFFFF
+        val bgColor = ColorHelper.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
+        val textColor = 0xFFFFFFFF.toInt() // White with full alpha
 
-            // Background box coordinates
-            val bgX1 = x - padding
-            val bgY1 = y - padding
-            val bgX2 = x + textWidth + padding
-            val bgY2 = y + textHeight + padding
+        // Draw background box first
+        drawContext.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
 
-            val bgColor = ColorHelper.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
-
-            // Draw background box
-            drawContext.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
-
-            // Draw text on top
-            drawContext.drawTextWithShadow(textRenderer, text, x, y, textColor) // White text
-        }
-
+        // Draw text with shadow
+        drawContext.drawTextWithShadow(textRenderer, textObj, x, y, textColor)
     }
 }
 
