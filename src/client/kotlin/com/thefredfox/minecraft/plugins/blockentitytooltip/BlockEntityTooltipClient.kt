@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.ConfigHolder
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import net.minecraft.client.MinecraftClient
@@ -27,6 +28,7 @@ lateinit var CONFIG_HOLDER: ConfigHolder<BlockEntityTooltipModConfig>
 object BlockEntityTooltipClient : ClientModInitializer {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val LAYER_IDENTIFIER: Identifier = Identifier.of("block_entity_tooltip", "looking_at")
+    private val lookingAtRenderer = LookingAtRenderer()
 
     override fun onInitializeClient() {
         AutoConfig.register(BlockEntityTooltipModConfig::class.java, ::GsonConfigSerializer)
@@ -38,10 +40,9 @@ object BlockEntityTooltipClient : ClientModInitializer {
         CONFIG = CONFIG_HOLDER.config
         HudElementRegistry.attachElementAfter(
             VanillaHudElements.CROSSHAIR,
-            LAYER_IDENTIFIER
-        ) { drawContext, tickCounter ->
-            renderLookingAt(drawContext, tickCounter)
-        }
+            LAYER_IDENTIFIER,
+            lookingAtRenderer::render
+        )
     }
 }
 
@@ -78,47 +79,49 @@ fun getNameOfLookedAt(player: PlayerEntity, distance: Double = 5.0): String? {
 
 }
 
-fun renderLookingAt(drawContext: DrawContext, tickCounter: RenderTickCounter) {
-    if (!CONFIG.enabled) {
-        return
-    }
+class LookingAtRenderer : HudElement {
+    override fun render(drawContext: DrawContext, tickCounter: RenderTickCounter) {
+        if (!CONFIG.enabled) {
+            return
+        }
 
-    val client = MinecraftClient.getInstance()
-        ?: return
-    val player = client.player
-        ?: return
-    val world = client.world
-        ?: return
+        val client = MinecraftClient.getInstance()
+            ?: return
+        val player = client.player
+            ?: return
+        val world = client.world
+            ?: return
 
-    getNameOfLookedAt(player, CONFIG.distance)?.let { text ->
-        val textRenderer = client.textRenderer
-        val textObj = Text.literal(text)
+        getNameOfLookedAt(player, CONFIG.distance)?.let { text ->
+            val textRenderer = client.textRenderer
+            val textObj = Text.literal(text)
 
-        val screenWidth = drawContext.scaledWindowWidth
-        val screenHeight = drawContext.scaledWindowHeight
+            val screenWidth = drawContext.scaledWindowWidth
+            val screenHeight = drawContext.scaledWindowHeight
 
-        val padding = 4
+            val padding = 4
 
-        val textWidth = textRenderer.getWidth(textObj)
-        val textHeight = textRenderer.fontHeight
+            val textWidth = textRenderer.getWidth(textObj)
+            val textHeight = textRenderer.fontHeight
 
-        val x = screenWidth - textWidth - 10
-        val y = screenHeight - textHeight - 40
+            val x = screenWidth - textWidth - 10
+            val y = screenHeight - textHeight - 40
 
-        // Background box coordinates
-        val bgX1 = x - padding
-        val bgY1 = y - padding
-        val bgX2 = x + textWidth + padding
-        val bgY2 = y + textHeight + padding
+            // Background box coordinates
+            val bgX1 = x - padding
+            val bgY1 = y - padding
+            val bgX2 = x + textWidth + padding
+            val bgY2 = y + textHeight + padding
 
-        val bgColor = ColorHelper.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
-        val textColor = 0xFFFFFFFF.toInt() // White with full alpha
+            val bgColor = ColorHelper.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
+            val textColor = 0xFFFFFFFF.toInt() // White with full alpha
 
-        // Draw background box first
-        drawContext.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
+            // Draw background box first
+            drawContext.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
 
-        // Draw text with shadow
-        drawContext.drawTextWithShadow(textRenderer, textObj, x, y, textColor)
+            // Draw text with shadow
+            drawContext.drawTextWithShadow(textRenderer, textObj, x, y, textColor)
+        }
     }
 }
 
