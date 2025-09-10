@@ -29,7 +29,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **ModMenu integration**: `BlockEntityTooltipModMenuIntegration.kt` - Configuration screen integration
 
 ### Key Features
-- **HUD Rendering**: Custom HUD layer for displaying tooltips
+- **HUD Rendering**: Uses Fabric's `HudElementRegistry` to register custom HUD elements
 - **Raycasting**: Custom `PlayerEntity.getLookingAt()` extension handles both block and entity detection
 - **Configuration**: Runtime config with save callbacks using Cloth Config AutoConfig system
 - **Mixins**: Uses client and server-side mixins for Minecraft integration
@@ -38,3 +38,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `src/main/` - Common code (server + client)
 - `src/client/` - Client-only code (HUD rendering, config)
 - Split environment source sets configured in `build.gradle`
+
+## Important Configuration
+
+### Version Information
+- **Minecraft**: 1.21.8
+- **Fabric Loader**: 0.16.14
+- **Java**: 21 (required)
+- **Kotlin**: 2.1.10
+- **Fabric Loom**: 1.10.4
+
+### Dependencies
+- Fabric API 0.133.4+1.21.8
+- Fabric Language Kotlin 1.13.1+kotlin.2.1.10
+- Cloth Config 19.0.147 (configuration UI)
+- ModMenu 15.0.0 (integration for config screen)
+
+### Development Environment
+The mod uses Fabric Loom plugin with split environment source sets. Client and server code are separated, with mixins configured for both environments in respective `.mixins.json` files.
