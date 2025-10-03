@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Compatible with Minecraft 1.21.6, 1.21.7, and 1.21.8**
 
 ### Changed
+- Verified and bumped Fabric API to 0.133.4+1.21.8 for MC 1.21.8 compatibility
+- Verified and bumped ModMenu to 15.0.0 for MC 1.21.8 compatibility
 - Added support for Minecraft 1.21.6+ (no new mod features, only compatibility updates)
 - Migrated from deprecated `HudLayerRegistrationCallback` to new `HudElementRegistry` API (required for MC 1.21.6+)
 - Updated Fabric API to 1.21.6+ compatible versions
