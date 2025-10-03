@@ -5,15 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.10.0] - 2025-09-07
-
-### Added
-- Support for Minecraft 1.21.8
-- Updated all dependencies to latest versions
+## [0.9.0+1.21.8] - 2025-09-07
 
 ### Changed
-- **BREAKING**: Migrated from deprecated `HudLayerRegistrationCallback` to new `HudElementRegistry` API
-- Updated Minecraft version from 1.21.4 to 1.21.8
+- Added support for Minecraft 1.21.8 (no new mod features, only compatibility updates)
+- Migrated from deprecated `HudLayerRegistrationCallback` to new `HudElementRegistry` API (required for MC 1.21.8)
 - Updated Fabric API from 0.118.0+1.21.4 to 0.133.4+1.21.8
 - Updated Fabric Loader from 0.16.10 to 0.16.14
 - Updated Cloth Config from 17.0.144 to 19.0.147
@@ -27,9 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical
 - Refactored HUD rendering to use `HudElementRegistry.attachElementAfter()`
 - Fixed text color format to use full ARGB (`0xFFFFFFFF`) instead of RGB
-- Replaced `LookingAtRenderer` class with functional approach using lambda
+- Converted `LookingAtRenderer` from `LayeredDrawer.Layer` to `HudElement` interface
 
-## [0.9.0] - Previous Version
+## [0.9.0+1.21.4] - Previous Version
 
 ### Added
 - Initial release of Block Entity Tooltip mod
