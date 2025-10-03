@@ -55,7 +55,7 @@ fun getNameOfLookedAt(player: PlayerEntity, distance: Double = 5.0): String? {
             if (CONFIG.showBlocks) {
                 val cHitResult = hitResult as BlockHitResult
                 val blockPos = cHitResult.blockPos
-                val blockState = player.world.getBlockState(blockPos)
+                val blockState = player.entityWorld.getBlockState(blockPos)
                 val block = blockState.block
                 return block.name.string
             } else {
@@ -134,7 +134,7 @@ fun PlayerEntity.getLookingAt(distance: Double): HitResult? {
 
     val expandedBox = this.boundingBox.expand(distance) // Expand around player
 
-    val entityHit = world.getOtherEntities(this, expandedBox)
+    val entityHit = this.entityWorld.getOtherEntities(this, expandedBox)
         .mapNotNull { entity ->
             val entityBox = entity.boundingBox.expand(0.25) // Slightly expand hitbox
             val optionalHit = entityBox.raycast(startPos, endPos)
