@@ -4,12 +4,12 @@ import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.ConfigHolder
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.LayeredDrawer
 import net.minecraft.client.render.RenderTickCounter
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
@@ -27,6 +27,8 @@ lateinit var CONFIG_HOLDER: ConfigHolder<BlockEntityTooltipModConfig>
 
 object BlockEntityTooltipClient : ClientModInitializer {
     private val logger = LoggerFactory.getLogger(javaClass)
+    private val LAYER_IDENTIFIER: Identifier = Identifier.of("block_entity_tooltip", "looking_at")
+    private val lookingAtRenderer = LookingAtRenderer()
 
     override fun onInitializeClient() {
         AutoConfig.register(BlockEntityTooltipModConfig::class.java, ::GsonConfigSerializer)
@@ -36,9 +38,11 @@ object BlockEntityTooltipClient : ClientModInitializer {
             ActionResult.SUCCESS
         }
         CONFIG = CONFIG_HOLDER.config
-        HudLayerRegistrationCallback.EVENT.register {
-            it.addLayer(IdentifiedLayer.of(LookingAtRenderer.LAYER_IDENTIFIER, LookingAtRenderer()))
-        }
+        HudElementRegistry.attachElementAfter(
+            VanillaHudElements.CROSSHAIR,
+            LAYER_IDENTIFIER,
+            lookingAtRenderer::render
+        )
     }
 }
 
@@ -75,18 +79,9 @@ fun getNameOfLookedAt(player: PlayerEntity, distance: Double = 5.0): String? {
 
 }
 
-class LookingAtRenderer : LayeredDrawer.Layer {
-    companion object {
-        @JvmStatic
-        val LAYER_IDENTIFIER: Identifier = Identifier.of("block_entity_tooltip", "looking_at")
-    }
-
-    override fun render(drawContext: DrawContext?, tickCounter: RenderTickCounter?) {
+class LookingAtRenderer : HudElement {
+    override fun render(drawContext: DrawContext, tickCounter: RenderTickCounter) {
         if (!CONFIG.enabled) {
-            return
-        }
-
-        if (drawContext == null) {
             return
         }
 
@@ -98,7 +93,7 @@ class LookingAtRenderer : LayeredDrawer.Layer {
             ?: return
 
         getNameOfLookedAt(player, CONFIG.distance)?.let { text ->
-            val textRenderer: TextRenderer = client.textRenderer
+            val textRenderer = client.textRenderer
             val textObj = Text.literal(text)
 
             val screenWidth = drawContext.scaledWindowWidth
@@ -111,7 +106,6 @@ class LookingAtRenderer : LayeredDrawer.Layer {
 
             val x = screenWidth - textWidth - 10
             val y = screenHeight - textHeight - 40
-            val textColor = 0xFFFFFF
 
             // Background box coordinates
             val bgX1 = x - padding
@@ -120,14 +114,14 @@ class LookingAtRenderer : LayeredDrawer.Layer {
             val bgY2 = y + textHeight + padding
 
             val bgColor = ColorHelper.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
+            val textColor = 0xFFFFFFFF.toInt() // White with full alpha
 
-            // Draw background box
+            // Draw background box first
             drawContext.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
 
-            // Draw text on top
-            drawContext.drawTextWithShadow(textRenderer, text, x, y, textColor) // White text
+            // Draw text with shadow
+            drawContext.drawTextWithShadow(textRenderer, textObj, x, y, textColor)
         }
-
     }
 }
 
