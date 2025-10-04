@@ -128,7 +128,7 @@ publishMods {
 
     modrinth {
         accessToken = providers.environmentVariable("MODRINTH_TOKEN")
-        projectId = "block-entity-tooltip"
+        projectId = "TJrOLdWj"
         minecraftVersions.add(project.minecraft_version)
 
         requires {
