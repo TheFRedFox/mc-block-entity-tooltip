@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `./gradlew jar` - Build mod jar only
 - `./gradlew runClient` - Launch Minecraft client with mod for testing
 - `./gradlew runDatagen` - Run data generation
+- `./gradlew publishModrinth` - Publish to Modrinth (requires MODRINTH_TOKEN environment variable)
 
 ### Fabric-specific Commands
 - `./gradlew genSources` - Decompile Minecraft sources (use when working with unmapped code)
@@ -56,3 +57,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Development Environment
 The mod uses Fabric Loom plugin with split environment source sets. Client and server code are separated, with mixins configured for both environments in respective `.mixins.json` files.
+
+## Release Process
+
+### Versioning Strategy
+The mod uses semantic versioning with a special scheme to track Minecraft API compatibility:
+- **Major version**: Minecraft API compatibility level (increments on breaking Minecraft changes)
+- **Minor version**: Mod features (currently 9)
+- **Patch version**: Bug fixes within a version branch
+
+Example: `2.9.0` where `2` = MC 1.21.9 API level, `9` = feature set, `0` = no patches
+
+### Branch Strategy
+- `main` - Current Minecraft version (MC 1.21.9+, version 2.x.x)
+- `1.21.6` - MC 1.21.6-1.21.8 (version 1.x.x)
+- `1.21.4` - MC 1.21.4-1.21.5 (version 0.x.x)
+
+### Releasing to Modrinth
+
+#### Prerequisites
+1. Set `MODRINTH_TOKEN` secret in GitHub repository settings
+2. Ensure version is updated in `gradle.properties`
+3. Update `CHANGELOG.md` with release notes
+
+#### Via GitHub Actions (Recommended)
+1. Create and push a git tag: `git tag v2.9.0+1.21.9 && git push origin v2.9.0+1.21.9`
+2. Go to Actions → "Release to Modrinth" → "Run workflow"
+3. Enter the tag (e.g., `v2.9.0+1.21.9`)
+4. The workflow will:
+   - Build from the tagged commit
+   - Publish to Modrinth
+   - Create a GitHub Release
+
+#### Manual Release
+```bash
+export MODRINTH_TOKEN=your_token_here
+./gradlew build publishModrinth
+```
+
+### Publishing Configuration
+Modrinth publishing is configured in `build.gradle` using the `mod-publish-plugin`:
+- **Project ID**: `block-entity-tooltip`
+- **Dependencies**: Fabric API (required), Fabric Language Kotlin (required), ModMenu (optional), Cloth Config (optional)
+- **Changelog**: Automatically reads from `CHANGELOG.md`
