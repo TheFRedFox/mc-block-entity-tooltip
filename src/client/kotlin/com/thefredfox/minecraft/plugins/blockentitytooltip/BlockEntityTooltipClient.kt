@@ -109,7 +109,7 @@ class LookingAtRenderer : HudRenderCallback {
             val bgX2 = x + textWidth + padding
             val bgY2 = y + textHeight + padding
 
-            val bgColor = ColorHelper.Argb.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
+            val bgColor = ColorHelper.getArgb(0x88, 0x0, 0x0, 0x0) // Black with transparency
 
             // Draw background box
             drawContext.fill(bgX1, bgY1, bgX2, bgY2, bgColor)

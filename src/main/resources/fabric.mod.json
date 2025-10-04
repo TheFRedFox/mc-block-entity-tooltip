@@ -48,12 +48,12 @@
 		}
 	],
 	"depends": {
-		"fabricloader": ">=0.16.0",
-		"minecraft": "~1.21.1",
+		"fabricloader": ">=0.16.9",
+		"minecraft": "~1.21.2",
 		"java": ">=21",
 		"fabric-api": "*",
 		"fabric-language-kotlin": "*",
-		"cloth-config": ">=15.0.127",
+		"cloth-config": ">=16.0.143",
 		"modmenu": "*"
 	}
 }
