@@ -118,7 +118,8 @@ publishing {
 // Modrinth publishing configuration
 publishMods {
     file = remapJar.archiveFile
-    changelog = rootProject.file("CHANGELOG.md").text
+    def changelogFile = rootProject.file("CHANGELOG.md")
+    changelog = changelogFile.exists() ? changelogFile.text : "See GitHub releases for changelog"
     type = STABLE
     modLoaders.add("fabric")
 
