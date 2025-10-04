@@ -6,6 +6,7 @@ plugins {
     id 'fabric-loom' version '1.11.3'
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "2.1.10"
+    id "me.modmuss50.mod-publish-plugin" version "0.8.4"
 }
 
 version = project.mod_version
@@ -115,5 +116,32 @@ publishing {
         // Notice: This block does NOT have the same function as the block in the top level.
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
+    }
+}
+
+// Modrinth publishing configuration
+publishMods {
+    file = remapJar.archiveFile
+    changelog = rootProject.file("CHANGELOG.md").text
+    type = STABLE
+    modLoaders.add("fabric")
+
+    modrinth {
+        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+        projectId = "TJrOLdWj"
+        minecraftVersions.add(project.minecraft_version)
+
+        requires {
+            slug = "fabric-api"
+        }
+        requires {
+            slug = "fabric-language-kotlin"
+        }
+        requires {
+            slug = "modmenu"
+        }
+        requires {
+            slug = "cloth-config"
+        }
     }
 }
