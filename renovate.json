@@ -2,5 +2,43 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
-  ]
+  ],
+  "packageRules": [
+    {
+      "description": "Group Minecraft-related updates together",
+      "matchFiles": ["gradle.properties"],
+      "matchDepNames": [
+        "minecraft_version",
+        "yarn_mappings",
+        "loader_version",
+        "fabric_version"
+      ],
+      "groupName": "Minecraft & Fabric",
+      "automerge": false
+    },
+    {
+      "description": "Group Kotlin updates together",
+      "matchPackagePatterns": ["kotlin"],
+      "groupName": "Kotlin"
+    },
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "automerge": true
+    },
+    {
+      "description": "Group Gradle plugin updates",
+      "matchManagers": ["gradle"],
+      "matchDepTypes": ["plugin"],
+      "groupName": "Gradle plugins"
+    },
+    {
+      "description": "Separate major updates for review",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ],
+  "prHourlyLimit": 3,
+  "prConcurrentLimit": 5
 }
