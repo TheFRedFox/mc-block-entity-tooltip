@@ -16,12 +16,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository at tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: refs/tags/${{ inputs.tag }}
 
       - name: Checkout Gradle files from main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
           sparse-checkout: |
@@ -38,7 +38,7 @@ jobs:
           cp -r gradle-from-main/gradle/* ./gradle/
 
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'microsoft'
