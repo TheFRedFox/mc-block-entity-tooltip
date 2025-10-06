@@ -6,20 +6,20 @@
   "packageRules": [
     {
       "description": "Group Minecraft-related updates together",
-      "matchFiles": ["gradle.properties"],
-      "matchDepNames": [
-        "minecraft_version",
-        "yarn_mappings",
-        "loader_version",
-        "fabric_version"
-      ],
+      "matchDatasources": ["gradle-version"],
       "groupName": "Minecraft & Fabric",
-      "automerge": false
+      "automerge": false,
+      "matchPackageNames": [
+        "/^com\\.mojang:minecraft$/",
+        "/^net\\.fabricmc:yarn$/",
+        "/^net\\.fabricmc:fabric-loader$/",
+        "/^net\\.fabricmc\\.fabric-api:fabric-api$/"
+      ]
     },
     {
       "description": "Group Kotlin updates together",
-      "matchPackagePatterns": ["kotlin"],
-      "groupName": "Kotlin"
+      "groupName": "Kotlin",
+      "matchPackageNames": ["/kotlin/"]
     },
     {
       "description": "Group GitHub Actions updates",
