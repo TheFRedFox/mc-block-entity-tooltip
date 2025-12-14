@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.9.0+1.21.11] - 2025-12-15
+
+**Compatible with Minecraft 1.21.11**
+
+### Changed
+- Updated to Minecraft 1.21.11 compatibility
+- **Migrated from Yarn to Mojang (official) mappings** - Prepares for upcoming unobfuscated Minecraft versions (26.1+)
+- Updated Fabric API to 0.139.5+1.21.11
+- Updated Fabric Loader to 0.18.2
+- Updated Cloth Config to 21.11.151
+- Updated ModMenu to 17.0.0-alpha.1
+- Updated Fabric Language Kotlin to 1.13.7+kotlin.2.2.21
+- Updated Fabric Loom to 1.14.6
+- Updated Gradle to 9.2.1
+- Updated Kotlin to 2.2.21
+
+### Technical
+- Refactored all Minecraft API imports from Yarn naming to Mojang naming conventions
+- Key class renames: `MinecraftClient` → `Minecraft`, `DrawContext` → `GuiGraphics`, `Text` → `Component`, `PlayerEntity` → `Player`
+- Key method renames: `raycast()` → `pick()`, `entityWorld` → `level()`, `drawTextWithShadow()` → `drawString()`
+
 ## [0.9.0+1.21.9] - 2025-10-04
 
 **Compatible with Minecraft 1.21.9 and 1.21.10**
