@@ -17,8 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `./gradlew publishModrinth` - Publish to Modrinth (requires MODRINTH_TOKEN environment variable)
 
 ### Fabric-specific Commands
-- `./gradlew genSources` - Decompile Minecraft sources (use when working with unmapped code)
-- `./gradlew migrateMappings` - Update to newer yarn mappings
+- `./gradlew genSources` - Decompile Minecraft sources (uses Mojang mappings)
 - `./gradlew downloadAssets` - Download required game assets
 
 ## Architecture
@@ -31,7 +30,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Key Features
 - **HUD Rendering**: Uses Fabric's `HudElementRegistry` to register custom HUD elements
-- **Raycasting**: Custom `PlayerEntity.getLookingAt()` extension handles both block and entity detection
+- **Raycasting**: Custom `Player.getLookingAt()` extension handles both block and entity detection
 - **Configuration**: Runtime config with save callbacks using Cloth Config AutoConfig system
 - **Mixins**: Uses client and server-side mixins for Minecraft integration
 
@@ -43,17 +42,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Important Configuration
 
 ### Version Information
-- **Minecraft**: 1.21.8
-- **Fabric Loader**: 0.16.14
+- **Minecraft**: 1.21.11
+- **Fabric Loader**: 0.18.1
 - **Java**: 21 (required)
-- **Kotlin**: 2.1.10
-- **Fabric Loom**: 1.10.4
+- **Kotlin**: 2.2.20
+- **Fabric Loom**: 1.14.6
+- **Gradle**: 9.2
+- **Mappings**: Mojang (official)
 
 ### Dependencies
-- Fabric API 0.133.4+1.21.8
-- Fabric Language Kotlin 1.13.1+kotlin.2.1.10
-- Cloth Config 19.0.147 (configuration UI)
-- ModMenu 15.0.0 (integration for config screen)
+- Fabric API 0.139.5+1.21.11
+- Fabric Language Kotlin 1.13.7+kotlin.2.2.21
+- Cloth Config 21.11.151 (configuration UI)
+- ModMenu 17.0.0-alpha.1 (integration for config screen)
 
 ### Development Environment
 The mod uses Fabric Loom plugin with split environment source sets. Client and server code are separated, with mixins configured for both environments in respective `.mixins.json` files.

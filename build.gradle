@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import static org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 
 plugins {
-    id 'fabric-loom' version '1.11.8'
+    id 'fabric-loom' version '1.14.6'
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "2.2.20"
     id "me.modmuss50.mod-publish-plugin" version "1.0.0"
@@ -54,7 +54,7 @@ fabricApi {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
