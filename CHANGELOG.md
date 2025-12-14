@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0+1.21.9] - 2025-10-04
 
-**Compatible with Minecraft 1.21.9**
+**Compatible with Minecraft 1.21.9 and 1.21.10**
 
 ### Changed
 - Updated to Minecraft 1.21.9 compatibility
