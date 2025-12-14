@@ -16,12 +16,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository at tag
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: refs/tags/${{ inputs.tag }}
 
       - name: Checkout Gradle files from main
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: main
           sparse-checkout: |
