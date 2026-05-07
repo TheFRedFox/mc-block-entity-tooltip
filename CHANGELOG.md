@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.9.1+1.21.11] - 2026-05-06
+
+**Compatible with Minecraft 1.21.11**
+
+### Changed
+- Updated Fabric API to 0.141.3+1.21.11
+- Updated Fabric Loader to 0.19.2
+- Updated ModMenu to 17.0.0 (stable)
+- Updated Fabric Language Kotlin to 1.13.11+kotlin.2.3.21
+- Updated Fabric Loom to 1.14.10
+- Updated Kotlin to 2.3.21
+
+### Technical
+- Migrated `AutoConfig.getConfigScreen` to `AutoConfigClient.getConfigScreen` for Cloth Config 21.11.x
+
 ## [3.9.0+1.21.11] - 2025-12-15
 
 **Compatible with Minecraft 1.21.11**
