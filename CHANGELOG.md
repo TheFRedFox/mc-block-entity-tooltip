@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.9.2+1.21.11] - 2026-05-07
+
+**Compatible with Minecraft 1.21.11**
+
+### Changed
+- Updated Fabric Loom to 1.16.1
+- Updated Gradle to 9.5.0
+
+### Note
+- MC 26.x migration deferred: ModMenu has no stable release for MC 26.x yet (only `18.0.0-alpha.8` available)
+
 ## [3.9.1+1.21.11] - 2026-05-06
 
 **Compatible with Minecraft 1.21.11**
