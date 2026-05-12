@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.util.ARGB
@@ -41,7 +41,7 @@ object BlockEntityTooltipClient : ClientModInitializer {
         HudElementRegistry.attachElementAfter(
             VanillaHudElements.CROSSHAIR,
             LAYER_IDENTIFIER,
-            lookingAtRenderer::render
+            lookingAtRenderer::extractRenderState
         )
     }
 }
@@ -80,13 +80,12 @@ fun getNameOfLookedAt(player: Player, distance: Double = 5.0): String? {
 }
 
 class LookingAtRenderer : HudElement {
-    override fun render(guiGraphics: GuiGraphics, deltaTracker: DeltaTracker) {
+    override fun extractRenderState(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
         if (!CONFIG.enabled) {
             return
         }
 
         val client = Minecraft.getInstance()
-            ?: return
         val player = client.player
             ?: return
         val world = client.level
@@ -96,8 +95,8 @@ class LookingAtRenderer : HudElement {
             val font = client.font
             val textObj = Component.literal(text)
 
-            val screenWidth = guiGraphics.guiWidth()
-            val screenHeight = guiGraphics.guiHeight()
+            val screenWidth = graphics.guiWidth()
+            val screenHeight = graphics.guiHeight()
 
             val padding = 4
 
@@ -107,20 +106,16 @@ class LookingAtRenderer : HudElement {
             val x = screenWidth - textWidth - 10
             val y = screenHeight - textHeight - 40
 
-            // Background box coordinates
             val bgX1 = x - padding
             val bgY1 = y - padding
             val bgX2 = x + textWidth + padding
             val bgY2 = y + textHeight + padding
 
-            val bgColor = ARGB.color(0x88, 0x0, 0x0, 0x0) // Black with transparency
-            val textColor = 0xFFFFFFFF.toInt() // White with full alpha
+            val bgColor = ARGB.color(0x88, 0x0, 0x0, 0x0)
+            val textColor = 0xFFFFFFFF.toInt()
 
-            // Draw background box first
-            guiGraphics.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
-
-            // Draw text with shadow
-            guiGraphics.drawString(font, textObj, x, y, textColor)
+            graphics.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
+            graphics.text(font, textObj, x, y, textColor)
         }
     }
 }

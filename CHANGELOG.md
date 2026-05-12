@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.9.0+26.1] - 2026-05-08
+
+**Compatible with Minecraft 26.1**
+
+### Changed
+- Migrated to Minecraft 26.1 (first release on the unobfuscated MC line)
+- Switched Fabric Loom plugin ID from `fabric-loom` to `net.fabricmc.fabric-loom` (required for unobfuscated MC)
+- Removed `loom.officialMojangMappings()` — not needed; 26.1+ source is already in Mojang names
+- Switched dependency configurations from `modImplementation`/`modApi` to `implementation`/`api`
+- Bumped Java toolchain from 21 to 25 (required by MC 26.1.x)
+- Updated Fabric API to 0.145.1+26.1
+- Updated Cloth Config to 26.1.154
+- Updated ModMenu to 18.0.0-alpha.8 (only release for MC 26.x at the time of this release; explicitly accepted exception)
+- Updated `fabric.mod.json` constraints: `minecraft ~26.1.0`, `cloth-config >=26.1.0`, `fabricloader >=0.19.0`, `java >=25`
+- Updated GitHub Actions release workflow to use Java 25
+
+### Technical
+- HUD rendering API change: `HudElement.render(GuiGraphics, DeltaTracker)` → `HudElement.extractRenderState(GuiGraphicsExtractor, DeltaTracker)`
+- Method renames in `GuiGraphicsExtractor`: `drawString()` → `text()` (other helpers like `fill()`, `guiWidth()`, `guiHeight()` unchanged)
+- `publishMods.file` switched from `remapJar.archiveFile` to `jar.archiveFile` (no remap step on unobfuscated builds)
+- Added `org.gradle.toolchains.foojay-resolver-convention` plugin to settings.gradle for Java toolchain auto-resolution
+
+### Note
+- ModMenu is still labeled alpha by TerraformersMC, but the underlying code has been frozen since 2026-03-25 and supports all stable MC 26.1.x releases. v18 stable will likely arrive with the next MC 26.2 release ceremony.
+- The `1.21.11` branch is preserved for users who can't migrate to MC 26.1.x.
+
 ## [3.9.2+1.21.11] - 2026-05-07
 
 **Compatible with Minecraft 1.21.11**

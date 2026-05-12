@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-import static org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+import static org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
 
 plugins {
-    id 'fabric-loom' version '1.16.1'
+    id 'net.fabricmc.fabric-loom' version '1.16.1'
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "2.3.21"
     id "me.modmuss50.mod-publish-plugin" version "1.1.0"
@@ -54,15 +54,14 @@ fabricApi {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 
-    modApi "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
-    modApi "com.terraformersmc:modmenu:${project.modmenu_version}"
+    api "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+    api "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {
@@ -74,12 +73,12 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = 25
 }
 
 tasks.withType(KotlinCompile).configureEach {
     compilerOptions {
-        jvmTarget = JVM_21
+        jvmTarget = JVM_25
     }
 }
 
@@ -89,8 +88,9 @@ java {
     // If you remove this line, sources will not be generated.
     withSourcesJar()
 
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
 jar {
@@ -121,7 +121,7 @@ publishing {
 
 // Modrinth publishing configuration
 publishMods {
-    file = remapJar.archiveFile
+    file = jar.archiveFile
     def changelogFile = rootProject.file("CHANGELOG.md")
     changelog = changelogFile.exists() ? changelogFile.text : ""
     type = STABLE
