@@ -54,20 +54,20 @@ If the IDE-launched client appears to use a stale Minecraft version or stale res
 
 ## Important Configuration
 
-### Version Information
-- **Minecraft**: 1.21.11
-- **Fabric Loader**: 0.18.1
-- **Java**: 21 (required)
-- **Kotlin**: 2.2.20
-- **Fabric Loom**: 1.14.6
-- **Gradle**: 9.2
-- **Mappings**: Mojang (official)
+### Version Information (current `main` — MC 26.1.x line)
+- **Minecraft**: 26.1.2
+- **Fabric Loader**: 0.19.2
+- **Java**: 25 (required by MC 26.1+)
+- **Kotlin**: 2.3.21
+- **Fabric Loom**: 1.16.1 (using `net.fabricmc.fabric-loom` plugin ID, the unobfuscated variant)
+- **Gradle**: 9.5.0
+- **Mappings**: none — MC 26.1+ is unobfuscated; source is already in Mojang names
 
 ### Dependencies
-- Fabric API 0.139.5+1.21.11
-- Fabric Language Kotlin 1.13.7+kotlin.2.2.21
-- Cloth Config 21.11.151 (configuration UI)
-- ModMenu 17.0.0-alpha.1 (integration for config screen)
+- Fabric API 0.148.0+26.1.2
+- Fabric Language Kotlin 1.13.11+kotlin.2.3.21
+- Cloth Config 26.1.154 (configuration UI)
+- ModMenu 18.0.0-alpha.8 (integration for config screen — accepted alpha exception; no stable release exists for MC 26.x yet)
 
 ### Development Environment
 The mod uses Fabric Loom plugin with split environment source sets. Client and server code are separated, with mixins configured for both environments in respective `.mixins.json` files.
@@ -78,14 +78,24 @@ The mod uses Fabric Loom plugin with split environment source sets. Client and s
 The mod uses semantic versioning with a special scheme to track Minecraft API compatibility:
 - **Major version**: Minecraft API compatibility level (increments on breaking Minecraft changes)
 - **Minor version**: Mod features (currently 9)
-- **Patch version**: Bug fixes within a version branch
+- **Patch version**: Bug fixes / dependency bumps within a version branch
 
-Example: `2.9.0` where `2` = MC 1.21.9 API level, `9` = feature set, `0` = no patches
+Tag format: `vMAJOR.MINOR.PATCH+MC_VERSION` (e.g. `v4.9.0+26.1.2`). The `+MC_VERSION` is build metadata identifying the lowest MC version supported — it does not affect SemVer ordering.
 
 ### Branch Strategy
-- `main` - Current Minecraft version (MC 1.21.9+, version 2.x.x)
-- `1.21.6` - MC 1.21.6-1.21.8 (version 1.x.x)
-- `1.21.4` - MC 1.21.4-1.21.5 (version 0.x.x)
+Each MC compatibility tier lives on a branch named after the lowest MC version it supports. `main` always tracks the current/highest MC tier; older tiers are preserved on named legacy branches.
+
+| Branch | MC range | Mod version line |
+|---|---|---|
+| `main` | 26.1.x | `4.x.x` |
+| `1.21.11` | 1.21.11 | `3.x.x` |
+| `1.21.9` | 1.21.9–1.21.10 | `2.x.x` |
+| `1.21.6` | 1.21.6–1.21.8 | `1.x.x` |
+| `1.21.4` | 1.21.4–1.21.5 | `0.x.x` |
+| `1.21.2` | 1.21.2–1.21.3 | `0.x.x` |
+| `1.21.0` | 1.21.0–1.21.1 | `0.x.x` |
+
+When MC introduces a breaking API change (e.g. the HUD rewrite at 1.21.6, the unobfuscated migration at 26.1), `main` is migrated and a new legacy branch is split off at the last commit on the old MC line.
 
 ### Releasing to Modrinth
 
