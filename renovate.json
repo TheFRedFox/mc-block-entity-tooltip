@@ -3,6 +3,25 @@
   "extends": [
     "config:recommended"
   ],
+  "ignoreDeps": ["com.mojang:minecraft"],
+  "customDatasources": {
+    "mojang-minecraft": {
+      "defaultRegistryUrlTemplate": "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json",
+      "format": "json",
+      "transformTemplates": [
+        "{ \"releases\": versions[type=\"release\"].{ \"version\": id, \"releaseTimestamp\": releaseTime } }"
+      ]
+    }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^gradle\\.properties$"],
+      "matchStrings": ["minecraft_version=(?<currentValue>.+)"],
+      "datasourceTemplate": "custom.mojang-minecraft",
+      "depNameTemplate": "minecraft"
+    }
+  ],
   "packageRules": [
     {
       "description": "Group Minecraft-related updates together",
@@ -42,6 +61,11 @@
       "description": "Pin Fabric API to current MC line (+26.1.2 suffix). The +<mc> suffix is SemVer build metadata, ignored by default; without this, Renovate proposes +26.2 snapshot builds which are incompatible. Update this constraint when migrating main to a new MC line.",
       "matchPackageNames": ["net.fabricmc.fabric-api:fabric-api"],
       "allowedVersions": "/^.*\\+26\\.1\\.2$/"
+    },
+    {
+      "description": "Pin Minecraft to current MC line (26.1.x). Uses the mojang-minecraft custom datasource (Mojang's version manifest is not a Maven repo). Update this constraint when migrating main to a new MC line.",
+      "matchDatasources": ["custom.mojang-minecraft"],
+      "allowedVersions": "/^26\\.1\\.[0-9]+$/"
     }
   ],
   "prHourlyLimit": 3,
