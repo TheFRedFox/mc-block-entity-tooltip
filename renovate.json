@@ -16,7 +16,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^gradle\\.properties$"],
+      "managerFilePatterns": [
+        "/^gradle\\.properties$/"
+      ],
       "matchStrings": ["minecraft_version=(?<currentValue>.+)"],
       "datasourceTemplate": "custom.mojang-minecraft",
       "depNameTemplate": "minecraft"
