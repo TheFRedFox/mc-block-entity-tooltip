@@ -55,19 +55,20 @@ If the IDE-launched client appears to use a stale Minecraft version or stale res
 ## Important Configuration
 
 ### Version Information (current `main` — MC 26.1.x line)
-- **Minecraft**: 26.1.2
-- **Fabric Loader**: 0.19.2
-- **Java**: 25 (required by MC 26.1+)
-- **Kotlin**: 2.3.21
-- **Fabric Loom**: 1.16.1 (using `net.fabricmc.fabric-loom` plugin ID, the unobfuscated variant)
-- **Gradle**: 9.5.0
-- **Mappings**: none — MC 26.1+ is unobfuscated; source is already in Mojang names
+Concrete version numbers (Minecraft, Fabric Loader, Kotlin, Fabric Loom, Gradle)
+live in `gradle.properties` and `build.gradle` — the single source of truth; do
+not duplicate them here.
+
+Durable facts for this MC tier:
+- **Java**: required version is dictated by the Minecraft version (MC 26.1+ needs Java 25), configured via the Gradle toolchain in `build.gradle`.
+- **Fabric Loom**: uses the `net.fabricmc.fabric-loom` plugin ID — the unobfuscated variant, required for MC 26.1+.
+- **Mappings**: none — MC 26.1+ is unobfuscated; source is already in Mojang names.
 
 ### Dependencies
-- Fabric API 0.148.0+26.1.2
-- Fabric Language Kotlin 1.13.11+kotlin.2.3.21
-- Cloth Config 26.1.154 (configuration UI)
-- ModMenu 18.0.0-alpha.8 (integration for config screen — accepted alpha exception; no stable release exists for MC 26.x yet)
+Dependency versions are defined in `gradle.properties` (Fabric API, Fabric Loader,
+Fabric Language Kotlin, Cloth Config, ModMenu) and `build.gradle` (Loom, Kotlin
+plugin, mod-publish-plugin). Those files are the single source of truth — do not
+duplicate version numbers here.
 
 ### Development Environment
 The mod uses Fabric Loom plugin with split environment source sets. Client and server code are separated, with mixins configured for both environments in respective `.mixins.json` files.
@@ -124,3 +125,39 @@ Modrinth publishing is configured in `build.gradle` using the `mod-publish-plugi
 - **Project ID**: `block-entity-tooltip`
 - **Dependencies**: Fabric API (required), Fabric Language Kotlin (required), ModMenu (optional), Cloth Config (optional)
 - **Changelog**: Automatically reads from `CHANGELOG.md`
+
+## Dependency Triage Rules
+
+Source of truth for classifying Renovate PRs. The `renovate-triage` skill executes
+the procedure but defers all policy here.
+
+### Version policy
+- **Stable versions only.** Reject pre-releases (alpha/beta/rc/snapshot) by default.
+- **ModMenu pre-release exception.** `com.terraformersmc:modmenu` has no stable
+  release for the current MC line; accept a ModMenu pre-release only when it is a
+  forward step toward stable vs. the current `modmenu_version` (alpha→beta,
+  beta.1→beta.2, beta→rc). Reject backward/sideways moves.
+- **Major updates** (SemVer major bump, or MC API tier change) are never auto-merge
+  candidates — always flag for explicit review.
+
+### Minecraft-line pinning
+- Current MC line = `minecraft_version` in `gradle.properties`.
+- Fabric API (`net.fabricmc.fabric-api:fabric-api`) must carry the
+  `+<minecraft_version>` build-metadata suffix matching `minecraft_version`. A
+  mismatched suffix is the **wrong MC line** — reject. The `+<mc>` suffix is SemVer
+  build metadata Renovate ignores unless pinned.
+- `renovate.json` encodes the live pins: a `packageRule` `allowedVersions` for
+  `net.fabricmc.fabric-api:fabric-api`, and one for the `custom.mojang-minecraft`
+  datasource. These regexes are authoritative and change only on MC-line migration.
+
+### Classification outcomes
+- **Already applied manually** — proposed ≤ value in `gradle.properties`/`build.gradle`. Close.
+- **Valid stable update** — stable, matches pins, newer. Merge candidate.
+- **Wrong MC line** — suffix/line fails the `renovate.json` pin. Close + explain.
+- **Pre-release** — reject (except ModMenu exception).
+- **Major update** — flag for review.
+
+### Authorization
+Triage produces a **plan only**. Never merge/close/comment on a PR or modify
+`renovate.json`/`gradle.properties` without explicit per-action user authorization
+in the same session.
