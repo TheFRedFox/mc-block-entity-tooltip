@@ -15,6 +15,8 @@ Releases are published at [modrinth.com/mod/block-entity-tooltip](https://modrin
 | `1.21.9` | 1.21.9–1.21.10 | `2.x.x` |
 | `1.21.6` | 1.21.6–1.21.8 | `1.x.x` |
 | `1.21.4` | 1.21.4–1.21.5 | `0.x.x` |
+| `1.21.2` | 1.21.2–1.21.3 | `0.x.x` |
+| `1.21.0` | 1.21.0–1.21.1 | `0.x.x` |
 
 Tag format: `vMAJOR.MINOR.PATCH+MC_VERSION` (e.g. `v4.9.0+26.1.2`). MAJOR increments on breaking Minecraft API changes.
 
