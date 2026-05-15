@@ -5,13 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.9.0+26.1.2] - 2026-05-13
+## [4.9.0+26.1.2] - 2026-05-15
 
 **Compatible with Minecraft 26.1.2**
 
 ### Changed
 - Updated Minecraft to 26.1.2
-- Updated Fabric API to 0.148.0+26.1.2
+- Updated Fabric API to 0.149.0+26.1.2
+- Updated ModMenu to 18.0.0-beta.1 (still pre-release but graduated from alpha — TerraformersMC's v18 ladder is alpha → beta → stable; same MC support range: 26.1, 26.1.1, 26.1.2)
+- Updated Fabric Loom to 1.16.2
+- Updated Gradle to 9.5.1
+- Updated GitHub Actions: `actions/upload-artifact` v6→v7, `gradle/actions` v5→v6, `softprops/action-gh-release` v2→v3
+
+### Technical
+- Added Renovate config rule pinning `net.fabricmc.fabric-api:fabric-api` updates to `+26.1.2` builds. Without this, Renovate proposed `+26.2` snapshot-line jars because the `+<mc>` suffix is SemVer build metadata and is ignored during version comparison.
 
 ## [4.9.0+26.1.1] - 2026-05-12
 
