@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.9.0+26.1.2] - 2026-05-15
 
-**Compatible with Minecraft 26.1.2**
+**Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
+
+Binary compatibility across the 26.1.x line verified by loading the 26.1.2-built jar on real MC 26.1 client.
 
 ### Changed
 - Updated Minecraft to 26.1.2
