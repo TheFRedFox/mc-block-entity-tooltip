@@ -1,9 +1,13 @@
 package com.thefredfox.minecraft.plugins.blockentitytooltip
 
 import me.shedaniel.autoconfig.AutoConfig
+import me.shedaniel.autoconfig.AutoConfigClient
 import me.shedaniel.autoconfig.ConfigHolder
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
+import me.shedaniel.clothconfig2.gui.AbstractConfigScreen
+import net.minecraft.client.gui.screens.ConfirmScreen
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
@@ -38,6 +42,24 @@ object BlockEntityTooltipClient : ClientModInitializer {
             InteractionResult.SUCCESS
         }
         CONFIG = CONFIG_HOLDER.config
+        PositionDraft.loadFrom(CONFIG)
+        AutoConfigClient.getGuiRegistry(BlockEntityTooltipModConfig::class.java)
+            .registerAnnotationProvider(FREEHAND_GUI_PROVIDER, FreehandEditorButton::class.java)
+        // Discard inference: Cloth gives no quit/discard hook. The draft is
+        // legitimately diverged only while the config UI is in use — the Cloth
+        // screen itself, our editor, or the discard-confirm dialog. The moment
+        // we're on any other screen (parent screen after discard, or back in
+        // game) with the draft still diverged, the user left without saving:
+        // re-seed from config so the in-game position rolls back immediately.
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            val s = client.screen
+            val inConfigUi = s is AbstractConfigScreen ||
+                s is PositionEditorScreen ||
+                s is ConfirmScreen
+            if (!inConfigUi && PositionDraft.differsFrom(CONFIG)) {
+                PositionDraft.loadFrom(CONFIG)
+            }
+        }
         HudElementRegistry.attachElementAfter(
             VanillaHudElements.CROSSHAIR,
             LAYER_IDENTIFIER,
@@ -102,21 +124,51 @@ class LookingAtRenderer : HudElement {
 
             val textWidth = font.width(textObj)
             val textHeight = font.lineHeight
+            val boxW = textWidth + padding * 2
+            val boxH = textHeight + padding * 2
 
-            val x = screenWidth - textWidth - 10
-            val y = screenHeight - textHeight - 40
-
-            val bgX1 = x - padding
-            val bgY1 = y - padding
-            val bgX2 = x + textWidth + padding
-            val bgY2 = y + textHeight + padding
+            val (boxX, boxY) = positionFor(
+                PositionDraft.preset, PositionDraft.posX, PositionDraft.posY,
+                screenWidth, screenHeight, boxW, boxH,
+            )
 
             val bgColor = ARGB.color(0x88, 0x0, 0x0, 0x0)
             val textColor = 0xFFFFFFFF.toInt()
 
-            graphics.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
-            graphics.text(font, textObj, x, y, textColor)
+            graphics.fill(boxX, boxY, boxX + boxW, boxY + boxH, bgColor)
+            graphics.text(font, textObj, boxX + padding, boxY + padding, textColor)
         }
+    }
+}
+
+/**
+ * Maps the configured position to top-left pixel coordinates of the tooltip box.
+ *
+ * Presets and the freehand editor share this single formula so "what you drag is
+ * what you get". Position is expressed as a fraction of the free space
+ * (`screen - box`), making it independent of GUI scale and resolution.
+ * [PositionPreset.ACTION_BAR] is just the preset fraction (0.5, 0.83) — the
+ * spot just above the hotbar that the user dialed in.
+ */
+fun positionFor(
+    preset: PositionPreset,
+    posX: Double,
+    posY: Double,
+    screenW: Int,
+    screenH: Int,
+    boxW: Int,
+    boxH: Int,
+): Pair<Int, Int> {
+    val freeW = (screenW - boxW).coerceAtLeast(0)
+    val freeH = (screenH - boxH).coerceAtLeast(0)
+    return when (preset) {
+        PositionPreset.CUSTOM -> {
+            val x = (freeW * posX).toInt().coerceIn(0, freeW)
+            val y = (freeH * posY).toInt().coerceIn(0, freeH)
+            x to y
+        }
+
+        else -> (freeW * preset.fractionX).toInt() to (freeH * preset.fractionY).toInt()
     }
 }
 
