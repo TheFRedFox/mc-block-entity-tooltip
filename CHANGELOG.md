@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.0+26.1.2] - 2026-05-15
+
+**Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
+
+### Added
+- Configurable tooltip position (issue #26). The config screen has a
+  **Position Editor** entry opening a live editor screen:
+  - **Preset buttons** laid out spatially: top-left/center/right, and
+    bottom-left / **Action bar** / bottom-right.
+  - **X / Y inputs** (0–1 fraction) for precise placement.
+  - **Drag** the sample box anywhere; any of the three methods previews live
+    and a freehand placement is marked `Custom`.
+  - **Cancel** restores the position to what it was when the editor opened.
+- Position is stored as a normalized fraction of free screen space, so it is
+  independent of GUI scale and resolution.
+
+### Changed
+- **Default position is now `ACTION_BAR`** (centred, just above the hotbar —
+  `0.5 / 0.83`). New installs get this; existing configs keep their saved
+  value. The previous fixed 10px/40px bottom-right placement is gone.
+
+### Technical
+- First MINOR feature bump in the project's history (4.9.0 → 4.10.0); the
+  feature digit had been static at `9`.
+- The editor is the single live hub; `positionPreset`/`posX`/`posY` are
+  `@ConfigEntry.Gui.Excluded` (serialized, not shown as Cloth fields). The
+  HUD renders from a `PositionDraft` the editor edits live, so **Done** shows
+  in-game at once. Persistence stays Cloth's: `FreehandEditorEntry.isEdited()`
+  enables "Save & Quit", `save()` (Cloth `saveAll`, never on discard) commits
+  the draft to config. Cloth exposes no discard hook, so a client-tick check
+  (`screen == null && draft ≠ config`) re-seeds the draft from config — i.e. a
+  discard rolls the in-game position back too. **Cancel/Escape** in the editor
+  reverts the draft to the editor-open snapshot.
+- Cloth Config 26.1.x has no native button list-entry; the launcher is a
+  `TextListEntry` subclass registered via `AutoConfigClient.getGuiRegistry` +
+  `registerAnnotationProvider` on a `@FreehandEditorButton` marker field, with
+  bounds captured from `extractRenderState` so it only triggers on its own row.
+- Editor uses the MC 26.1 input/render API (`MouseButtonEvent`, `EditBox`,
+  `extractRenderState(GuiGraphicsExtractor, …)`).
+
 ## [4.9.0+26.1.2] - 2026-05-15
 
 **Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
