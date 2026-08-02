@@ -6,7 +6,7 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.16.2'
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "2.3.21"
-    id "me.modmuss50.mod-publish-plugin" version "1.1.0"
+    id "me.modmuss50.mod-publish-plugin" version "2.2.0"
 }
 
 version = project.mod_version
