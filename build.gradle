@@ -3,9 +3,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import static org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
 
 plugins {
-    id 'net.fabricmc.fabric-loom' version '1.16.2'
+    id 'net.fabricmc.fabric-loom' version '1.17.20'
     id 'maven-publish'
-    id "org.jetbrains.kotlin.jvm" version "2.3.21"
+    id "org.jetbrains.kotlin.jvm" version "2.4.10"
     id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
