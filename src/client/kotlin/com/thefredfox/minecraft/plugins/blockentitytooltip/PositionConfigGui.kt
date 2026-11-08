@@ -12,15 +12,9 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
 
 /**
- * A button-like AutoConfig entry. Cloth Config 26.1.x has no native button
- * list-entry, so this subclasses [TextListEntry] (which already implements the
- * full 26.1 entry contract).
+ * Button-like Cloth entry that opens [PositionEditorScreen]; Cloth 26.1.x has no button entry.
  *
- * Cloth's element list dispatches `mouseClicked` to entries that do NOT
- * pre-filter by position (each entry must self-check bounds — the base
- * TextListEntry does this via its text hit-test). So we capture the rendered
- * row rectangle in [extractRenderState] and only act on a left click inside it;
- * otherwise the editor would open for clicks anywhere in the screen.
+ * Cloth dispatches clicks to every entry, so the entry checks its own last rendered row bounds.
  */
 @Suppress("DEPRECATION") // all TextListEntry constructors are @Deprecated; a builder can't give us a subclass
 @Environment(EnvType.CLIENT)
@@ -31,11 +25,7 @@ class FreehandEditorEntry(label: Component) :
     private var rowY = 0
     private var rowW = 0
 
-    // The editor edits PositionDraft live (the HUD reads the draft, so Done
-    // shows in-game immediately). Persistence is Cloth's: isEdited() enables
-    // "Save & Quit" and the discard-confirm; save() (called by Cloth's
-    // saveAll, never on discard) commits the draft into CONFIG so the
-    // serializer writes it. Discard is inferred elsewhere via a tick check.
+    // Enables Cloth's "Save & Quit"; Cloth calls save() only on save, never on discard.
     override fun isEdited(): Boolean = PositionDraft.differsFrom(CONFIG)
 
     override fun save() {
@@ -77,45 +67,41 @@ class FreehandEditorEntry(label: Component) :
 }
 
 /**
- * The position the HUD actually renders from. The editor mutates this live
- * (so Done shows in-game at once). It is committed into [CONFIG] only by
- * Cloth's "Save & Quit" ([FreehandEditorEntry.save]); a Cloth discard never
- * calls save, and a tick check then re-seeds the draft from [CONFIG] so the
- * in-game position rolls back too.
+ * The position the HUD renders from. The editor changes it live; [FreehandEditorEntry.save]
+ * commits it to [CONFIG], and the client tick in [BlockEntityTooltipClient] re-seeds it after a discard.
  */
 object PositionDraft {
-    var preset: PositionPreset = PositionPreset.ACTION_BAR
-    var posX: Double = 0.5
-    var posY: Double = 0.83
+    var anchor: Anchor = PositionPreset.DEFAULT.anchor
+    var offsetX: Int = PositionPreset.DEFAULT.offsetX
+    var offsetY: Int = PositionPreset.DEFAULT.offsetY
 
-    fun loadFrom(c: BlockEntityTooltipModConfig) {
-        preset = c.positionPreset
-        posX = c.posX
-        posY = c.posY
+    val preset: PositionPreset? get() = PositionPreset.matching(anchor, offsetX, offsetY)
+
+    fun set(anchor: Anchor, offsetX: Int, offsetY: Int) {
+        this.anchor = anchor
+        this.offsetX = offsetX
+        this.offsetY = offsetY
     }
 
+    fun set(preset: PositionPreset) = set(preset.anchor, preset.offsetX, preset.offsetY)
+
+    fun loadFrom(c: BlockEntityTooltipModConfig) = set(c.anchor, c.offsetX, c.offsetY)
+
     fun applyTo(c: BlockEntityTooltipModConfig) {
-        c.positionPreset = preset
-        c.posX = posX
-        c.posY = posY
+        c.anchor = anchor
+        c.offsetX = offsetX
+        c.offsetY = offsetY
     }
 
     fun differsFrom(c: BlockEntityTooltipModConfig): Boolean =
-        preset != c.positionPreset || posX != c.posX || posY != c.posY
+        anchor != c.anchor || offsetX != c.offsetX || offsetY != c.offsetY
 }
 
-/**
- * Registered for [FreehandEditorButton] in [BlockEntityTooltipClient]; replaces
- * the phantom marker field's default widget with the "open editor" entry.
- * Re-seeds [PositionDraft] from the committed config each time the screen builds.
- */
+/** Replaces the [FreehandEditorButton] field's widget with the editor launcher. */
 val FREEHAND_GUI_PROVIDER: GuiProvider = GuiProvider { _, _, _, _, _ ->
     PositionDraft.loadFrom(CONFIG)
-    // Cloth 26.1 has no native button list-entry, so style the text to read
-    // as an action: leading arrow + gold accent (Minecraft's usual highlight
-    // colour). No underline — that read too much like an HTML hyperlink.
     val label = Component.literal("▶ ")
-        .append(Component.translatable("text.autoconfig.block-entity-tooltip.option.openFreehandEditor"))
+        .append(Component.translatable("$I18N.option.openFreehandEditor"))
         .withStyle(ChatFormatting.GOLD)
     listOf<AbstractConfigListEntry<*>>(FreehandEditorEntry(label))
 }

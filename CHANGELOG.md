@@ -5,39 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.10.0+26.1.2] - 2026-05-15
+## [4.10.0+26.1.2] - 2026-11-08
 
 **Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
 
 ### Added
 - Configurable tooltip position (issue #26). The config screen has a
-  **Position Editor** entry opening a live editor screen:
-  - **Preset buttons** laid out spatially: top-left/center/right, and
-    bottom-left / **Action bar** / bottom-right.
-  - **X / Y inputs** (0–1 fraction) for precise placement.
-  - **Drag** the sample box anywhere; any of the three methods previews live
-    and a freehand placement is marked `Custom`.
-  - **Cancel** restores the position to what it was when the editor opened.
-- Position is stored as a normalized fraction of free screen space, so it is
-  independent of GUI scale and resolution.
+  **Position Editor** entry that opens a live editor screen:
+  - **Preset buttons** on a 3×3 grid: top left/center/right, middle
+    left/right, bottom left / **Action bar** / bottom right. The center cell
+    stays empty because the crosshair is there.
+  - **X / Y inputs** set the offset in GUI pixels from the anchor.
+  - **Drag** the sample box anywhere; the editor buttons fade during the drag.
+    The box attaches to the nearest of the nine anchors, and a position that
+    matches no preset shows as `Custom`.
+  - All three methods preview live. **Cancel** restores the position from
+    when the editor opened.
+  - A faint placeholder shows where vanilla action-bar messages appear.
+- The position is an anchor plus a pixel offset, like vanilla HUD elements. A
+  tooltip keeps its distance to the nearest screen edge at every GUI scale and
+  window size.
 
 ### Changed
-- **Default position is now `ACTION_BAR`** (centred, just above the hotbar —
-  `0.5 / 0.83`). New installs get this; existing configs keep their saved
-  value. The previous fixed 10px/40px bottom-right placement is gone.
+- **Default position is now `Action bar`**: centered, 2 px above the line
+  where vanilla shows action-bar messages. This applies to all users,
+  including existing configs. The old fixed placement near the bottom-right
+  corner is gone. Pick `Bottom right` in the editor to get close to it.
 
 ### Technical
 - First MINOR feature bump in the project's history (4.9.0 → 4.10.0); the
   feature digit had been static at `9`.
-- The editor is the single live hub; `positionPreset`/`posX`/`posY` are
-  `@ConfigEntry.Gui.Excluded` (serialized, not shown as Cloth fields). The
-  HUD renders from a `PositionDraft` the editor edits live, so **Done** shows
-  in-game at once. Persistence stays Cloth's: `FreehandEditorEntry.isEdited()`
-  enables "Save & Quit", `save()` (Cloth `saveAll`, never on discard) commits
-  the draft to config. Cloth exposes no discard hook, so a client-tick check
-  (`screen == null && draft ≠ config`) re-seeds the draft from config — i.e. a
-  discard rolls the in-game position back too. **Cancel/Escape** in the editor
-  reverts the draft to the editor-open snapshot.
+- Config fields `anchor`/`offsetX`/`offsetY` are `@ConfigEntry.Gui.Excluded`
+  (serialized, not shown as Cloth fields). Presets are not stored; the editor
+  derives them from the position. An unknown `anchor` value in the config file
+  falls back to the default instead of crashing the HUD.
+- The HUD renders from a `PositionDraft` the editor edits live, so **Done**
+  shows in-game at once. Cloth's "Save & Quit" commits the draft to config
+  (`FreehandEditorEntry.isEdited()`/`save()`). Cloth exposes no discard hook,
+  so a client-tick check re-seeds the draft from config when the draft differs
+  outside the config UI; a discard rolls the in-game position back too.
 - Cloth Config 26.1.x has no native button list-entry; the launcher is a
   `TextListEntry` subclass registered via `AutoConfigClient.getGuiRegistry` +
   `registerAnnotationProvider` on a `@FreehandEditorButton` marker field, with

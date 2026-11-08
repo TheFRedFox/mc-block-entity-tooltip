@@ -9,13 +9,29 @@
 
   "text.autoconfig.block-entity-tooltip.option.openFreehandEditor": "Position Editor",
 
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.TOP_LEFT": "Top left",
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.TOP_CENTER": "Top center",
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.TOP_RIGHT": "Top right",
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.CENTER": "Center",
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.BOTTOM_LEFT": "Bottom left",
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.BOTTOM_CENTER": "Bottom center",
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.BOTTOM_RIGHT": "Bottom right",
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.ACTION_BAR": "Action bar",
-  "text.autoconfig.block-entity-tooltip.option.positionPreset.CUSTOM": "Custom (freehand)"
+  "text.autoconfig.block-entity-tooltip.editor.title": "Tooltip Position",
+  "text.autoconfig.block-entity-tooltip.editor.hint": "Pick a preset, type X/Y offsets in pixels, or drag the box.",
+  "text.autoconfig.block-entity-tooltip.editor.current": "Current: %s (anchor: %s)",
+  "text.autoconfig.block-entity-tooltip.editor.reset": "Reset to default",
+  "text.autoconfig.block-entity-tooltip.editor.actionBarSample": "Action bar messages appear here",
+
+  "text.autoconfig.block-entity-tooltip.positionPreset.TOP_LEFT": "Top left",
+  "text.autoconfig.block-entity-tooltip.positionPreset.TOP_CENTER": "Top center",
+  "text.autoconfig.block-entity-tooltip.positionPreset.TOP_RIGHT": "Top right",
+  "text.autoconfig.block-entity-tooltip.positionPreset.MIDDLE_LEFT": "Middle left",
+  "text.autoconfig.block-entity-tooltip.positionPreset.MIDDLE_RIGHT": "Middle right",
+  "text.autoconfig.block-entity-tooltip.positionPreset.BOTTOM_LEFT": "Bottom left",
+  "text.autoconfig.block-entity-tooltip.positionPreset.ACTION_BAR": "Action bar",
+  "text.autoconfig.block-entity-tooltip.positionPreset.BOTTOM_RIGHT": "Bottom right",
+  "text.autoconfig.block-entity-tooltip.positionPreset.CUSTOM": "Custom",
+
+  "text.autoconfig.block-entity-tooltip.anchor.TOP_LEFT": "top left",
+  "text.autoconfig.block-entity-tooltip.anchor.TOP_CENTER": "top center",
+  "text.autoconfig.block-entity-tooltip.anchor.TOP_RIGHT": "top right",
+  "text.autoconfig.block-entity-tooltip.anchor.MIDDLE_LEFT": "middle left",
+  "text.autoconfig.block-entity-tooltip.anchor.CENTER": "center",
+  "text.autoconfig.block-entity-tooltip.anchor.MIDDLE_RIGHT": "middle right",
+  "text.autoconfig.block-entity-tooltip.anchor.BOTTOM_LEFT": "bottom left",
+  "text.autoconfig.block-entity-tooltip.anchor.BOTTOM_CENTER": "bottom center",
+  "text.autoconfig.block-entity-tooltip.anchor.BOTTOM_RIGHT": "bottom right"
 }

@@ -3,40 +3,61 @@ package com.thefredfox.minecraft.plugins.blockentitytooltip
 import me.shedaniel.autoconfig.ConfigData
 import me.shedaniel.autoconfig.annotation.Config
 import me.shedaniel.autoconfig.annotation.ConfigEntry
-import me.shedaniel.clothconfig2.gui.entries.SelectionListEntry
 
-private const val I18N = "text.autoconfig.block-entity-tooltip"
+const val I18N = "text.autoconfig.block-entity-tooltip"
 
 /**
- * Anchor presets. Non-special presets map to a normalized (fractionX, fractionY)
- * pair; the renderer places the box with `pos = (screenSize - boxSize) * fraction`
- * (0 = start edge, 1 = end edge, 0.5 = centered).
- *
- * [ACTION_BAR] is special-cased in the renderer (centered X, vanilla action-bar Y
- * band). [CUSTOM] uses [BlockEntityTooltipModConfig.posX]/posY from the freehand
- * editor.
- *
- * Implements [SelectionListEntry.Translatable] so the Cloth dropdown shows
- * translated labels instead of raw enum names.
+ * A point on the 3×3 screen grid. The tooltip box keeps its pixel offset to this point,
+ * so it stays put relative to the nearest edge across GUI scales and window sizes.
  */
-enum class PositionPreset(val fractionX: Double, val fractionY: Double) :
-    SelectionListEntry.Translatable {
+enum class Anchor(val fractionX: Double, val fractionY: Double) {
     TOP_LEFT(0.0, 0.0),
     TOP_CENTER(0.5, 0.0),
     TOP_RIGHT(1.0, 0.0),
+    MIDDLE_LEFT(0.0, 0.5),
     CENTER(0.5, 0.5),
+    MIDDLE_RIGHT(1.0, 0.5),
     BOTTOM_LEFT(0.0, 1.0),
     BOTTOM_CENTER(0.5, 1.0),
-    BOTTOM_RIGHT(1.0, 1.0),
+    BOTTOM_RIGHT(1.0, 1.0);
 
-    /** Just above the hotbar / where the vanilla action-bar text sits. */
-    ACTION_BAR(0.5, 0.83),
-    CUSTOM(1.0, 1.0);
+    val key: String get() = "$I18N.anchor.$name"
 
-    override fun getKey(): String = "$I18N.option.positionPreset.$name"
+    companion object {
+        /** The anchor whose screen third holds the box center. */
+        fun nearest(boxX: Int, boxY: Int, boxW: Int, boxH: Int, screenW: Int, screenH: Int): Anchor {
+            val col = ((boxX + boxW / 2) * 3 / screenW.coerceAtLeast(1)).coerceIn(0, 2)
+            val row = ((boxY + boxH / 2) * 3 / screenH.coerceAtLeast(1)).coerceIn(0, 2)
+            return entries[row * 3 + col]
+        }
+    }
 }
 
-/** Marker for the synthetic "open freehand editor" entry; see PositionConfigGui. */
+/** A named anchor and offset. Not stored: the editor derives it from the configured position. */
+enum class PositionPreset(val anchor: Anchor, val offsetX: Int, val offsetY: Int) {
+    TOP_LEFT(Anchor.TOP_LEFT, 4, 4),
+    TOP_CENTER(Anchor.TOP_CENTER, 0, 4),
+    TOP_RIGHT(Anchor.TOP_RIGHT, -4, 4),
+    MIDDLE_LEFT(Anchor.MIDDLE_LEFT, 4, 0),
+    MIDDLE_RIGHT(Anchor.MIDDLE_RIGHT, -4, 0),
+    BOTTOM_LEFT(Anchor.BOTTOM_LEFT, 4, -4),
+
+    // Vanilla draws action-bar messages from H-72 down; this keeps the box 2 px above them.
+    ACTION_BAR(Anchor.BOTTOM_CENTER, 0, -74),
+    BOTTOM_RIGHT(Anchor.BOTTOM_RIGHT, -4, -4);
+
+    val key: String get() = "$I18N.positionPreset.$name"
+
+    companion object {
+        val DEFAULT = ACTION_BAR
+        const val CUSTOM_KEY = "$I18N.positionPreset.CUSTOM"
+
+        fun matching(anchor: Anchor, offsetX: Int, offsetY: Int): PositionPreset? =
+            entries.firstOrNull { it.anchor == anchor && it.offsetX == offsetX && it.offsetY == offsetY }
+    }
+}
+
+/** Marker for the synthetic "open position editor" entry; see [FREEHAND_GUI_PROVIDER]. */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class FreehandEditorButton
@@ -49,24 +70,29 @@ class BlockEntityTooltipModConfig(
     var showEntities: Boolean = true,
     var showFluids: Boolean = false,
 
-    // Managed entirely by PositionEditorScreen, not editable Cloth fields.
-    // @Gui.Excluded hides them from the config screen but they are still
-    // serialized (Gson) and persisted.
+    // Set only through PositionEditorScreen; excluded from the Cloth list but still serialized.
     @ConfigEntry.Gui.Excluded
-    var positionPreset: PositionPreset = PositionPreset.ACTION_BAR,
+    var anchor: Anchor = PositionPreset.DEFAULT.anchor,
 
-    /** Normalized box-position fraction (0..1), authoritative when [positionPreset] is [PositionPreset.CUSTOM]. */
+    /** GUI pixels from [anchor], screen axes (+x right, +y down). */
     @ConfigEntry.Gui.Excluded
-    var posX: Double = 0.5,
+    var offsetX: Int = PositionPreset.DEFAULT.offsetX,
 
     @ConfigEntry.Gui.Excluded
-    var posY: Double = 0.83,
+    var offsetY: Int = PositionPreset.DEFAULT.offsetY,
 
-    /**
-     * Phantom field: value unused. Carries [FreehandEditorButton] so the
-     * registered GuiProvider injects the position-editor launcher entry into
-     * the main settings list. The editor is the single live position hub.
-     */
+    /** Value unused: the field only carries [FreehandEditorButton] into the Cloth list. */
     @FreehandEditorButton
     var openFreehandEditor: Boolean = false,
-) : ConfigData
+) : ConfigData {
+
+    // Gson writes null for an unknown enum name and bypasses Kotlin's null checks.
+    @Suppress("SENSELESS_COMPARISON")
+    override fun validatePostLoad() {
+        if (anchor == null) {
+            anchor = PositionPreset.DEFAULT.anchor
+            offsetX = PositionPreset.DEFAULT.offsetX
+            offsetY = PositionPreset.DEFAULT.offsetY
+        }
+    }
+}
