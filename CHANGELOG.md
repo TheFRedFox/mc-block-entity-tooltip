@@ -17,8 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Kotlin to 2.4.21
 - Updated Fabric Loom to 1.19.4
 - Updated Gradle to 9.9.0
+- **Requires Fabric Language Kotlin 1.14.2+kotlin.2.4.21 or newer.** The
+  mod is built with Kotlin 2.4 and can crash on an older Kotlin runtime.
 
 ### Technical
+- The Fabric Language Kotlin floor in `fabric.mod.json` comes from
+  `fabric_kotlin_version` in `gradle.properties`, so it follows each bump.
 - The build workflow runs on Java 25, like the release workflow. Fabric
   Loom 1.19.4 needs a Java 25 runtime.
 - Removed an unreachable `null` branch on `HitResult.Type` that Kotlin 2.4
