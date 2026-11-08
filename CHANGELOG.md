@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.1+26.1.2] - 2026-11-08
+
+**Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
+
+### Changed
+- Updated Fabric API to 0.155.3+26.1.2
+- Updated Fabric Loader to 0.20.1
+- Updated Fabric Language Kotlin to 1.14.2+kotlin.2.4.21
+- Updated ModMenu to 18.0.2 (first stable release for MC 26.1.x)
+- Updated Kotlin to 2.4.21
+- Updated Fabric Loom to 1.19.4
+- Updated Gradle to 9.9.0
+
+### Technical
+- The build workflow runs on Java 25, like the release workflow. Fabric
+  Loom 1.19.4 needs a Java 25 runtime.
+- Removed an unreachable `null` branch on `HitResult.Type` that Kotlin 2.4
+  reported as dead code.
+
 ## [4.10.0+26.1.2] - 2026-11-08
 
 **Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
