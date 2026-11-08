@@ -13,11 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configurable tooltip position (issue #26). The config screen has a
   **Position Editor** entry that opens a live editor screen:
   - **Preset buttons** as arrows on a 3×3 grid: top left/center/right, middle
-    left/right, bottom left / **Action bar** (`▣`) / bottom right. The center
-    cell stays empty because the crosshair is there.
-  - **X / Y inputs** set the offset in GUI pixels from the anchor.
+    left / **Below crosshair** (`·`) / middle right, bottom left /
+    **Action bar** (`▣`) / bottom right. Each button sets one of the nine
+    anchors; a frame marks the current anchor.
+  - **Anchor button** cycles through the nine anchors. The box stays in place;
+    only X/Y change to the new anchor.
+  - **Red guide lines** run from the anchor point to the box: the horizontal
+    line is X, the vertical line is Y.
+  - **X / Y inputs** set the offset in GUI pixels from the anchor, so anchor
+    plus X/Y reproduce a position exactly on another device.
   - **Drag** the sample box anywhere. It attaches to the nearest of the nine
-    anchors, and a position that matches no preset shows as `Custom`.
+    anchors.
   - All controls sit in one compact panel in the screen half away from the
     box, so the box never covers them.
   - All three methods preview live. **Cancel** restores the position from

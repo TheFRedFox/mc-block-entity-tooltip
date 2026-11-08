@@ -6,10 +6,12 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.CycleButton
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.resources.language.I18n
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.util.ARGB
@@ -39,6 +41,7 @@ class PositionEditorScreen(private val parent: Screen?) :
     private val presetButtons = LinkedHashMap<PositionPreset, Button>()
     private lateinit var inputX: EditBox
     private lateinit var inputY: EditBox
+    private lateinit var anchorButton: CycleButton<Anchor>
 
     // Stops the EditBox responders from treating our own setValue calls as user input.
     private var syncingInputs = false
@@ -77,6 +80,30 @@ class PositionEditorScreen(private val parent: Screen?) :
         syncInputs()
     }
 
+    // Keeps the box in place: only the offsets change to the new anchor.
+    private fun selectAnchor(anchor: Anchor) {
+        val b = box()
+        val (ox, oy) = anchorOrigin(anchor, width, height, b.w, b.h)
+        PositionDraft.set(anchor, b.x - ox, b.y - oy)
+        syncInputs()
+    }
+
+    /**
+     * Marks the anchor on the screen and runs an L from it to the matching point on the box:
+     * the horizontal leg is X, the vertical leg is Y.
+     */
+    private fun extractAnchorGuides(graphics: GuiGraphicsExtractor) {
+        val anchor = PositionDraft.anchor
+        val b = box()
+        val ax = (anchor.fractionX * width).toInt().coerceIn(0, width - 1)
+        val ay = (anchor.fractionY * height).toInt().coerceIn(0, height - 1)
+        val px = (b.x + anchor.fractionX * b.w).toInt().coerceIn(b.x, b.x + b.w - 1)
+        val py = (b.y + anchor.fractionY * b.h).toInt().coerceIn(b.y, b.y + b.h - 1)
+        graphics.fill(minOf(ax, px), ay, maxOf(ax, px) + 1, ay + 1, GUIDE)
+        graphics.fill(px, minOf(ay, py), px + 1, maxOf(ay, py) + 1, GUIDE)
+        graphics.fill(ax - 2, ay - 2, ax + 3, ay + 3, GUIDE)
+    }
+
     private fun syncInputs() {
         syncingInputs = true
         inputX.value = PositionDraft.offsetX.toString()
@@ -90,6 +117,10 @@ class PositionEditorScreen(private val parent: Screen?) :
         val y = inputY.value.toIntOrNull() ?: return
         PositionDraft.set(PositionDraft.anchor, x, y)
     }
+
+    /** Presets off the standard 4 px margin name their anchor in a separate tooltip key. */
+    private fun tooltipKey(preset: PositionPreset): String =
+        "${preset.key}.tooltip".takeIf { I18n.exists(it) } ?: preset.key
 
     private fun <T : AbstractWidget> place(widget: T, relX: Int, relY: Int): T {
         panelWidgets += Triple(widget, relX, relY)
@@ -115,12 +146,12 @@ class PositionEditorScreen(private val parent: Screen?) :
         presetButtons.clear()
         panelWidgets.clear()
 
-        // The center cell stays empty: the crosshair is there.
         val grid = listOf(
             Triple(PositionPreset.TOP_LEFT, 0, 0),
             Triple(PositionPreset.TOP_CENTER, 1, 0),
             Triple(PositionPreset.TOP_RIGHT, 2, 0),
             Triple(PositionPreset.MIDDLE_LEFT, 0, 1),
+            Triple(PositionPreset.BELOW_CROSSHAIR, 1, 1),
             Triple(PositionPreset.MIDDLE_RIGHT, 2, 1),
             Triple(PositionPreset.BOTTOM_LEFT, 0, 2),
             Triple(PositionPreset.ACTION_BAR, 1, 2),
@@ -129,12 +160,18 @@ class PositionEditorScreen(private val parent: Screen?) :
         for ((preset, col, row) in grid) {
             val button = Button.builder(Component.literal(ARROWS.getValue(preset))) { selectPreset(preset) }
                 .size(CELL, CELL)
-                .tooltip(Tooltip.create(Component.translatable(preset.key)))
+                .tooltip(Tooltip.create(Component.translatable(tooltipKey(preset))))
                 .build()
             presetButtons[preset] = place(button, PAD + col * (CELL + CELL_GAP), GRID_Y + row * (CELL + CELL_GAP))
         }
 
         val rx = PAD + GRID + COL_GAP
+        anchorButton = place(
+            CycleButton.builder<Anchor>({ Component.translatable(it.key) }, PositionDraft.anchor)
+                .withValues(Anchor.entries)
+                .create(0, 0, RIGHT_W, CELL, Component.translatable("$I18N.editor.anchor")) { _, a -> selectAnchor(a) },
+            rx, GRID_Y,
+        )
         inputX = place(EditBox(font, 0, 0, 50, 18, Component.literal("X")), rx + 10, GRID_Y + 22)
         inputY = place(EditBox(font, 0, 0, 50, 18, Component.literal("Y")), rx + 80, GRID_Y + 22)
         listOf(inputX, inputY).forEach { it.setMaxLength(6) }
@@ -170,14 +207,22 @@ class PositionEditorScreen(private val parent: Screen?) :
         val actionBar = Component.translatable("$I18N.editor.actionBarSample")
         graphics.text(font, actionBar, width / 2 - font.width(actionBar) / 2, height - 72, ARGB.color(0x80, 0xFF, 0xFF, 0xFF))
 
+        extractAnchorGuides(graphics)
         graphics.fill(panelX, panelY, panelX + panelWidth(), panelY + PANEL_H, ARGB.color(0xB0, 0x0, 0x0, 0x0))
         presetButtons.forEach { (preset, button) -> button.active = current != preset }
+        if (anchorButton.value != PositionDraft.anchor) anchorButton.value = PositionDraft.anchor
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
 
+        // X/Y are relative to this anchor, also for a Custom position.
+        presetButtons.entries.firstOrNull { it.key.anchor == PositionDraft.anchor }?.value?.let { cell ->
+            val (x1, y1, x2, y2) = listOf(cell.x - 1, cell.y - 1, cell.x + cell.width + 1, cell.y + cell.height + 1)
+            graphics.fill(x1, y1, x2, y1 + 1, white)
+            graphics.fill(x1, y2 - 1, x2, y2, white)
+            graphics.fill(x1, y1, x1 + 1, y2, white)
+            graphics.fill(x2 - 1, y1, x2, y2, white)
+        }
+
         graphics.text(font, Component.translatable("$I18N.editor.hint"), panelX + PAD, panelY + PAD, 0xFFA0A0A0.toInt())
-        val rx = panelX + PAD + GRID + COL_GAP
-        val status = Component.translatable(current?.key ?: PositionPreset.CUSTOM_KEY)
-        graphics.text(font, status, rx, panelY + GRID_Y + 6, white)
         graphics.text(font, Component.literal("X"), inputX.x - 10, inputX.y + 5, white)
         graphics.text(font, Component.literal("Y"), inputY.x - 10, inputY.y + 5, white)
 
@@ -242,12 +287,14 @@ class PositionEditorScreen(private val parent: Screen?) :
         const val BTN_GAP = 5
         const val RIGHT_W = 3 * BTN_W + 2 * BTN_GAP
         const val PANEL_H = GRID_Y + GRID + PAD
+        const val GUIDE = 0xFFFF4040.toInt()
 
         val ARROWS = mapOf(
             PositionPreset.TOP_LEFT to "↖",
             PositionPreset.TOP_CENTER to "↑",
             PositionPreset.TOP_RIGHT to "↗",
             PositionPreset.MIDDLE_LEFT to "←",
+            PositionPreset.BELOW_CROSSHAIR to "·",
             PositionPreset.MIDDLE_RIGHT to "→",
             PositionPreset.BOTTOM_LEFT to "↙",
             PositionPreset.ACTION_BAR to "▣",

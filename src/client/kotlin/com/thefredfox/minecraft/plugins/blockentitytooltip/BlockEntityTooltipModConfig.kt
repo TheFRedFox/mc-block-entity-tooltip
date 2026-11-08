@@ -21,6 +21,8 @@ enum class Anchor(val fractionX: Double, val fractionY: Double) {
     BOTTOM_CENTER(0.5, 1.0),
     BOTTOM_RIGHT(1.0, 1.0);
 
+    val key: String get() = "$I18N.anchor.$name"
+
     companion object {
         /** The anchor whose screen third holds the box center. */
         fun nearest(boxX: Int, boxY: Int, boxW: Int, boxH: Int, screenW: Int, screenH: Int): Anchor {
@@ -31,12 +33,15 @@ enum class Anchor(val fractionX: Double, val fractionY: Double) {
     }
 }
 
-/** A named anchor and offset. Not stored: the editor derives it from the configured position. */
+/** A named anchor and offset, one per anchor. Not stored: the editor derives it from the configured position. */
 enum class PositionPreset(val anchor: Anchor, val offsetX: Int, val offsetY: Int) {
     TOP_LEFT(Anchor.TOP_LEFT, 4, 4),
     TOP_CENTER(Anchor.TOP_CENTER, 0, 4),
     TOP_RIGHT(Anchor.TOP_RIGHT, -4, 4),
     MIDDLE_LEFT(Anchor.MIDDLE_LEFT, 4, 0),
+
+    // Box top about 2 px below the 15 px crosshair.
+    BELOW_CROSSHAIR(Anchor.CENTER, 0, 18),
     MIDDLE_RIGHT(Anchor.MIDDLE_RIGHT, -4, 0),
     BOTTOM_LEFT(Anchor.BOTTOM_LEFT, 4, -4),
 
@@ -48,7 +53,6 @@ enum class PositionPreset(val anchor: Anchor, val offsetX: Int, val offsetY: Int
 
     companion object {
         val DEFAULT = ACTION_BAR
-        const val CUSTOM_KEY = "$I18N.positionPreset.CUSTOM"
 
         fun matching(anchor: Anchor, offsetX: Int, offsetY: Int): PositionPreset? =
             entries.firstOrNull { it.anchor == anchor && it.offsetX == offsetX && it.offsetY == offsetY }
