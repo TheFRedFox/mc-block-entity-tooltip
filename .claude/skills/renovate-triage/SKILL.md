@@ -66,10 +66,7 @@ one outcome per dependency, using values read in Step 0:
 - proposed ≤ current in `gradle.properties`/`build.gradle` → **Already applied manually**
 - Fabric API whose `+<suffix>` ≠ current `minecraft_version`, or any version failing
   the relevant `renovate.json` `allowedVersions` regex → **Wrong MC line**
-- pre-release (`alpha`/`beta`/`rc`/`snapshot`/`-pre`): if dependency is
-  `com.terraformersmc:modmenu` and it is a forward step toward stable vs. current
-  `modmenu_version` → **Valid stable update** (call out the ModMenu exception);
-  otherwise → **Pre-release**
+- pre-release (`alpha`/`beta`/`rc`/`snapshot`/`-pre`) → **Pre-release**
 - SemVer major bump or MC API tier change → **Major update**
 - otherwise stable, within pins, newer → **Valid stable update**
 

@@ -54,7 +54,7 @@ If the IDE-launched client appears to use a stale Minecraft version or stale res
 
 ## Important Configuration
 
-### Version Information (current `main` — MC 26.1.x line)
+### Version Information (current `main` — MC 26.2.x line)
 Concrete version numbers (Minecraft, Fabric Loader, Kotlin, Fabric Loom, Gradle)
 live in `gradle.properties` and `build.gradle` — the single source of truth; do
 not duplicate them here.
@@ -76,19 +76,24 @@ The mod uses Fabric Loom plugin with split environment source sets. Client and s
 ## Release Process
 
 ### Versioning Strategy
-The mod uses semantic versioning with a special scheme to track Minecraft API compatibility:
-- **Major version**: Minecraft API compatibility level (increments on breaking Minecraft changes)
-- **Minor version**: Mod features
-- **Patch version**: Bug fixes / dependency bumps within a version branch
+From MC 26.2 on, every MC line shares one mod version; the MC version is only build metadata:
+- **Major / Minor version**: mod changes only (breaking / features). The same `MAJOR.MINOR` means the same features on every MC line.
+- **Patch version**: bug fixes, dependency bumps and MC-specific changes. Each MC line counts its own patch, so lines may differ (e.g. `4.10.1+26.2` next to `4.10.3+26.3`).
+- A port of a feature to an older line takes that feature's `MAJOR.MINOR`.
 
-Tag format: `vMAJOR.MINOR.PATCH+MC_VERSION` (e.g. `v4.9.0+26.1.2`). The `+MC_VERSION` is build metadata identifying the lowest MC version supported — it does not affect SemVer ordering.
+`version` in `build.gradle` is `mod_version+minecraft_version`, so the jar name, `fabric.mod.json` and the Modrinth version number all carry the MC version (e.g. `block-entity-tooltip-4.10.1+26.2.jar`).
+
+Tag format: `vMAJOR.MINOR.PATCH+MC_VERSION` (e.g. `v4.10.1+26.2`). The `+MC_VERSION` is SemVer build metadata (lowest MC version supported) and does not affect ordering.
+
+Before 26.2 the major version tracked the MC API tier (`0.x` to `4.x`); legacy branches keep those numbers.
 
 ### Branch Strategy
 Each MC compatibility tier lives on a branch named after the lowest MC version it supports. `main` always tracks the current/highest MC tier; older tiers are preserved on named legacy branches.
 
 | Branch | MC range | Mod version line |
 |---|---|---|
-| `main` | 26.1.x | `4.x.x` |
+| `main` | 26.2.x | shared (`4.10.1+26.2`) |
+| `26.1` | 26.1–26.1.2 | `4.x.x` |
 | `1.21.11` | 1.21.11 | `3.x.x` |
 | `1.21.9` | 1.21.9–1.21.10 | `2.x.x` |
 | `1.21.6` | 1.21.6–1.21.8 | `1.x.x` |
@@ -133,10 +138,6 @@ the procedure but defers all policy here.
 
 ### Version policy
 - **Stable versions only.** Reject pre-releases (alpha/beta/rc/snapshot) by default.
-- **ModMenu pre-release exception.** `com.terraformersmc:modmenu` has no stable
-  release for the current MC line; accept a ModMenu pre-release only when it is a
-  forward step toward stable vs. the current `modmenu_version` (alpha→beta,
-  beta.1→beta.2, beta→rc). Reject backward/sideways moves.
 - **Major updates** (SemVer major bump, or MC API tier change) are never auto-merge
   candidates — always flag for explicit review.
 
@@ -154,7 +155,7 @@ the procedure but defers all policy here.
 - **Already applied manually** — proposed ≤ value in `gradle.properties`/`build.gradle`. Close.
 - **Valid stable update** — stable, matches pins, newer. Merge candidate.
 - **Wrong MC line** — suffix/line fails the `renovate.json` pin. Close + explain.
-- **Pre-release** — reject (except ModMenu exception).
+- **Pre-release** — reject.
 - **Major update** — flag for review.
 
 ### Authorization
