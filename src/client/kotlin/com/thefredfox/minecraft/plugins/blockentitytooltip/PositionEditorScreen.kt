@@ -11,7 +11,7 @@ import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.MouseButtonEvent
-import net.minecraft.client.resources.language.I18n
+import net.minecraft.locale.Language
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.util.ARGB
@@ -67,12 +67,12 @@ class PositionEditorScreen(private val parent: Screen?) :
     }
 
     private fun doneAndClose() {
-        Minecraft.getInstance().setScreen(parent)
+        Minecraft.getInstance().gui.setScreen(parent)
     }
 
     private fun revertAndClose() {
         PositionDraft.set(origAnchor, origOffsetX, origOffsetY)
-        Minecraft.getInstance().setScreen(parent)
+        Minecraft.getInstance().gui.setScreen(parent)
     }
 
     private fun selectPreset(preset: PositionPreset) {
@@ -120,7 +120,7 @@ class PositionEditorScreen(private val parent: Screen?) :
 
     /** Presets off the standard 4 px margin name their anchor in a separate tooltip key. */
     private fun tooltipKey(preset: PositionPreset): String =
-        "${preset.key}.tooltip".takeIf { I18n.exists(it) } ?: preset.key
+        "${preset.key}.tooltip".takeIf { Language.getInstance().has(it) } ?: preset.key
 
     private fun <T : AbstractWidget> place(widget: T, relX: Int, relY: Int): T {
         panelWidgets += Triple(widget, relX, relY)
