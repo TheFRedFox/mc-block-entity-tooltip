@@ -78,7 +78,7 @@ The mod uses Fabric Loom plugin with split environment source sets. Client and s
 ### Versioning Strategy
 The mod uses semantic versioning with a special scheme to track Minecraft API compatibility:
 - **Major version**: Minecraft API compatibility level (increments on breaking Minecraft changes)
-- **Minor version**: Mod features (currently 9)
+- **Minor version**: Mod features
 - **Patch version**: Bug fixes / dependency bumps within a version branch
 
 Tag format: `vMAJOR.MINOR.PATCH+MC_VERSION` (e.g. `v4.9.0+26.1.2`). The `+MC_VERSION` is build metadata identifying the lowest MC version supported — it does not affect SemVer ordering.
