@@ -12,13 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Configurable tooltip position (issue #26). The config screen has a
   **Position Editor** entry that opens a live editor screen:
-  - **Preset buttons** on a 3×3 grid: top left/center/right, middle
-    left/right, bottom left / **Action bar** / bottom right. The center cell
-    stays empty because the crosshair is there.
+  - **Preset buttons** as arrows on a 3×3 grid: top left/center/right, middle
+    left/right, bottom left / **Action bar** (`▣`) / bottom right. The center
+    cell stays empty because the crosshair is there.
   - **X / Y inputs** set the offset in GUI pixels from the anchor.
-  - **Drag** the sample box anywhere; the editor buttons fade during the drag.
-    The box attaches to the nearest of the nine anchors, and a position that
-    matches no preset shows as `Custom`.
+  - **Drag** the sample box anywhere. It attaches to the nearest of the nine
+    anchors, and a position that matches no preset shows as `Custom`.
+  - All controls sit in one compact panel in the screen half away from the
+    box, so the box never covers them.
   - All three methods preview live. **Cancel** restores the position from
     when the editor opened.
   - A faint placeholder shows where vanilla action-bar messages appear.

@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.CommonComponents
@@ -18,6 +19,7 @@ import net.minecraft.util.ARGB
  *
  * Every change goes to [PositionDraft], so the HUD follows at once. Done keeps the draft for
  * Cloth's "Save & Quit"; Cancel and Escape restore the draft from when the editor opened.
+ * The controls sit in one panel in the screen half away from the box, so the two never overlap.
  */
 @Environment(EnvType.CLIENT)
 class PositionEditorScreen(private val parent: Screen?) :
@@ -27,13 +29,6 @@ class PositionEditorScreen(private val parent: Screen?) :
     private val padding = 4
 
     private var draggingBox = false
-        set(value) {
-            field = value
-            children().filterIsInstance<AbstractWidget>().forEach {
-                // EditBox ignores alpha, so the inputs hide instead of fading.
-                if (it is EditBox) it.visible = !value else it.setAlpha(if (value) 0.2f else 1f)
-            }
-        }
     private var grabOffsetX = 0
     private var grabOffsetY = 0
 
@@ -47,6 +42,11 @@ class PositionEditorScreen(private val parent: Screen?) :
 
     // Stops the EditBox responders from treating our own setValue calls as user input.
     private var syncingInputs = false
+
+    /** Widgets with their position relative to the panel origin. */
+    private val panelWidgets = mutableListOf<Triple<AbstractWidget, Int, Int>>()
+    private var panelX = 0
+    private var panelY = 0
 
     private data class Box(val x: Int, val y: Int, val w: Int, val h: Int)
 
@@ -91,10 +91,32 @@ class PositionEditorScreen(private val parent: Screen?) :
         PositionDraft.set(PositionDraft.anchor, x, y)
     }
 
+    private fun <T : AbstractWidget> place(widget: T, relX: Int, relY: Int): T {
+        panelWidgets += Triple(widget, relX, relY)
+        return addRenderableWidget(widget)
+    }
+
+    private fun panelWidth(): Int {
+        val hintW = font.width(Component.translatable("$I18N.editor.hint"))
+        return PAD * 2 + maxOf(GRID + COL_GAP + RIGHT_W, hintW)
+    }
+
+    /** Centers the panel in the screen half that does not hold the box center. */
+    private fun layoutPanel() {
+        val b = box()
+        val half = height / 2
+        val boxInUpperHalf = b.y + b.h / 2 < half
+        panelX = (width - panelWidth()) / 2
+        panelY = ((if (boxInUpperHalf) half else 0) + (half - PANEL_H) / 2).coerceAtLeast(0)
+        panelWidgets.forEach { (w, rx, ry) -> w.setPosition(panelX + rx, panelY + ry) }
+    }
+
     override fun init() {
         presetButtons.clear()
+        panelWidgets.clear()
+
         // The center cell stays empty: the crosshair is there.
-        val layout = listOf(
+        val grid = listOf(
             Triple(PositionPreset.TOP_LEFT, 0, 0),
             Triple(PositionPreset.TOP_CENTER, 1, 0),
             Triple(PositionPreset.TOP_RIGHT, 2, 0),
@@ -104,45 +126,34 @@ class PositionEditorScreen(private val parent: Screen?) :
             Triple(PositionPreset.ACTION_BAR, 1, 2),
             Triple(PositionPreset.BOTTOM_RIGHT, 2, 2),
         )
-        val btnW = 96
-        val btnH = 20
-        val gap = 4
-        val startX = (width - (3 * btnW + 2 * gap)) / 2
-        val startY = 46
-        for ((preset, col, row) in layout) {
-            val button = Button.builder(Component.translatable(preset.key)) {
-                selectPreset(preset)
-            }.bounds(startX + col * (btnW + gap), startY + row * (btnH + gap), btnW, btnH).build()
-            presetButtons[preset] = button
-            addRenderableWidget(button)
+        for ((preset, col, row) in grid) {
+            val button = Button.builder(Component.literal(ARROWS.getValue(preset))) { selectPreset(preset) }
+                .size(CELL, CELL)
+                .tooltip(Tooltip.create(Component.translatable(preset.key)))
+                .build()
+            presetButtons[preset] = place(button, PAD + col * (CELL + CELL_GAP), GRID_Y + row * (CELL + CELL_GAP))
         }
 
-        val font = Minecraft.getInstance().font
-        val inputsY = startY + 3 * (btnH + gap) + 2
-        inputX = EditBox(font, width / 2 - 70, inputsY, 50, 18, Component.literal("X"))
-        inputY = EditBox(font, width / 2 + 30, inputsY, 50, 18, Component.literal("Y"))
-        listOf(inputX, inputY).forEach {
-            it.setMaxLength(6)
-            addRenderableWidget(it)
-        }
+        val rx = PAD + GRID + COL_GAP
+        inputX = place(EditBox(font, 0, 0, 50, 18, Component.literal("X")), rx + 10, GRID_Y + 22)
+        inputY = place(EditBox(font, 0, 0, 50, 18, Component.literal("Y")), rx + 80, GRID_Y + 22)
+        listOf(inputX, inputY).forEach { it.setMaxLength(6) }
         inputX.setResponder { onInputChanged() }
         inputY.setResponder { onInputChanged() }
         syncInputs()
 
-        val bottomY = height - 28
-        addRenderableWidget(
-            Button.builder(CommonComponents.GUI_CANCEL) { revertAndClose() }
-                .bounds(width / 2 - 154, bottomY, 100, 20).build()
+        val actions = listOf(
+            CommonComponents.GUI_CANCEL to { revertAndClose() },
+            Component.translatable("$I18N.editor.reset") to { selectPreset(PositionPreset.DEFAULT) },
+            CommonComponents.GUI_DONE to { doneAndClose() },
         )
-        addRenderableWidget(
-            Button.builder(Component.translatable("$I18N.editor.reset")) {
-                selectPreset(PositionPreset.DEFAULT)
-            }.bounds(width / 2 - 50, bottomY, 100, 20).build()
-        )
-        addRenderableWidget(
-            Button.builder(CommonComponents.GUI_DONE) { doneAndClose() }
-                .bounds(width / 2 + 54, bottomY, 100, 20).build()
-        )
+        actions.forEachIndexed { i, (label, action) ->
+            place(
+                Button.builder(label) { action() }.size(BTN_W, CELL).build(),
+                rx + i * (BTN_W + BTN_GAP), GRID_Y + GRID - CELL,
+            )
+        }
+        layoutPanel()
     }
 
     override fun extractRenderState(
@@ -151,41 +162,28 @@ class PositionEditorScreen(private val parent: Screen?) :
         mouseY: Int,
         partialTick: Float,
     ) {
-        val font = Minecraft.getInstance().font
         val white = 0xFFFFFFFF.toInt()
         val current = PositionDraft.preset
+        layoutPanel()
 
         // Same spot as vanilla's action-bar message (Gui draws it from H-72).
         val actionBar = Component.translatable("$I18N.editor.actionBarSample")
         graphics.text(font, actionBar, width / 2 - font.width(actionBar) / 2, height - 72, ARGB.color(0x80, 0xFF, 0xFF, 0xFF))
 
+        graphics.fill(panelX, panelY, panelX + panelWidth(), panelY + PANEL_H, ARGB.color(0xB0, 0x0, 0x0, 0x0))
         presetButtons.forEach { (preset, button) -> button.active = current != preset }
-        // Widgets derive hover from the mouse position; an off-screen one keeps those under the box unhovered.
-        if (draggingBox || isOverBox(mouseX.toDouble(), mouseY.toDouble())) {
-            super.extractRenderState(graphics, -1, -1, partialTick)
-        } else {
-            super.extractRenderState(graphics, mouseX, mouseY, partialTick)
-        }
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick)
 
-        // Drawn after the widgets: the box wins clicks over them, so it also draws on top.
+        graphics.text(font, Component.translatable("$I18N.editor.hint"), panelX + PAD, panelY + PAD, 0xFFA0A0A0.toInt())
+        val rx = panelX + PAD + GRID + COL_GAP
+        val status = Component.translatable(current?.key ?: PositionPreset.CUSTOM_KEY)
+        graphics.text(font, status, rx, panelY + GRID_Y + 6, white)
+        graphics.text(font, Component.literal("X"), inputX.x - 10, inputX.y + 5, white)
+        graphics.text(font, Component.literal("Y"), inputY.x - 10, inputY.y + 5, white)
+
         val b = box()
         graphics.fill(b.x, b.y, b.x + b.w, b.y + b.h, ARGB.color(0x88, 0x0, 0x0, 0x0))
         graphics.text(font, sampleText, b.x + padding, b.y + padding, white)
-
-        graphics.text(font, title, width / 2 - font.width(title) / 2, 8, white)
-        val hint = Component.translatable("$I18N.editor.hint")
-        graphics.text(font, hint, width / 2 - font.width(hint) / 2, 20, white)
-        val status = Component.translatable(
-            "$I18N.editor.current",
-            Component.translatable(current?.key ?: PositionPreset.CUSTOM_KEY),
-            Component.translatable(PositionDraft.anchor.key),
-        )
-        graphics.text(font, status, width / 2 - font.width(status) / 2, 32, white)
-
-        if (!draggingBox) {
-            graphics.text(font, Component.literal("X"), inputX.x - 10, inputX.y + 5, white)
-            graphics.text(font, Component.literal("Y"), inputY.x - 10, inputY.y + 5, white)
-        }
     }
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
@@ -232,4 +230,28 @@ class PositionEditorScreen(private val parent: Screen?) :
     }
 
     override fun isPauseScreen(): Boolean = false
+
+    private companion object {
+        const val PAD = 6
+        const val CELL = 20
+        const val CELL_GAP = 2
+        const val GRID = 3 * CELL + 2 * CELL_GAP
+        const val GRID_Y = PAD + 13
+        const val COL_GAP = 8
+        const val BTN_W = 62
+        const val BTN_GAP = 5
+        const val RIGHT_W = 3 * BTN_W + 2 * BTN_GAP
+        const val PANEL_H = GRID_Y + GRID + PAD
+
+        val ARROWS = mapOf(
+            PositionPreset.TOP_LEFT to "↖",
+            PositionPreset.TOP_CENTER to "↑",
+            PositionPreset.TOP_RIGHT to "↗",
+            PositionPreset.MIDDLE_LEFT to "←",
+            PositionPreset.MIDDLE_RIGHT to "→",
+            PositionPreset.BOTTOM_LEFT to "↙",
+            PositionPreset.ACTION_BAR to "▣",
+            PositionPreset.BOTTOM_RIGHT to "↘",
+        )
+    }
 }

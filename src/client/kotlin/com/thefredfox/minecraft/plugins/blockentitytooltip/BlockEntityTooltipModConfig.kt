@@ -21,8 +21,6 @@ enum class Anchor(val fractionX: Double, val fractionY: Double) {
     BOTTOM_CENTER(0.5, 1.0),
     BOTTOM_RIGHT(1.0, 1.0);
 
-    val key: String get() = "$I18N.anchor.$name"
-
     companion object {
         /** The anchor whose screen third holds the box center. */
         fun nearest(boxX: Int, boxY: Int, boxW: Int, boxH: Int, screenW: Int, screenH: Int): Anchor {
