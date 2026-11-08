@@ -20,27 +20,18 @@ jobs:
         with:
           ref: refs/tags/${{ inputs.tag }}
 
-      - name: Checkout Gradle files from main
-        uses: actions/checkout@v6
-        with:
-          ref: main
-          sparse-checkout: |
-            build.gradle
-            settings.gradle
-            gradle/
-          sparse-checkout-cone-mode: false
-          path: gradle-from-main
-
-      - name: Copy Gradle files from main
+      # Each MC line needs its own JDK; the tag's build.gradle names it.
+      - name: Detect Java version
+        id: java
         run: |
-          cp gradle-from-main/build.gradle ./build.gradle
-          cp gradle-from-main/settings.gradle ./settings.gradle
-          cp -r gradle-from-main/gradle/* ./gradle/
+          version=$(grep -oP 'options\.release = \K[0-9]+' build.gradle)
+          test -n "$version" || { echo "::error::No options.release in build.gradle"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Setup JDK
         uses: actions/setup-java@v5
         with:
-          java-version: '25'
+          java-version: ${{ steps.java.outputs.version }}
           distribution: 'microsoft'
 
       - name: Make gradle wrapper executable
