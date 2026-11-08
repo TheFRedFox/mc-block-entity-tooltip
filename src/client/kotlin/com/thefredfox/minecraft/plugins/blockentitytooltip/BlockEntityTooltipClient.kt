@@ -1,9 +1,13 @@
 package com.thefredfox.minecraft.plugins.blockentitytooltip
 
 import me.shedaniel.autoconfig.AutoConfig
+import me.shedaniel.autoconfig.AutoConfigClient
 import me.shedaniel.autoconfig.ConfigHolder
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
+import me.shedaniel.clothconfig2.gui.AbstractConfigScreen
+import net.minecraft.client.gui.screens.ConfirmScreen
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
@@ -38,6 +42,19 @@ object BlockEntityTooltipClient : ClientModInitializer {
             InteractionResult.SUCCESS
         }
         CONFIG = CONFIG_HOLDER.config
+        PositionDraft.loadFrom(CONFIG)
+        AutoConfigClient.getGuiRegistry(BlockEntityTooltipModConfig::class.java)
+            .registerAnnotationProvider(FREEHAND_GUI_PROVIDER, FreehandEditorButton::class.java)
+        // Cloth has no discard hook: a draft that differs outside the config UI means the user discarded.
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            val s = client.screen
+            val inConfigUi = s is AbstractConfigScreen ||
+                s is PositionEditorScreen ||
+                s is ConfirmScreen
+            if (!inConfigUi && PositionDraft.differsFrom(CONFIG)) {
+                PositionDraft.loadFrom(CONFIG)
+            }
+        }
         HudElementRegistry.attachElementAfter(
             VanillaHudElements.CROSSHAIR,
             LAYER_IDENTIFIER,
@@ -102,22 +119,44 @@ class LookingAtRenderer : HudElement {
 
             val textWidth = font.width(textObj)
             val textHeight = font.lineHeight
+            val boxW = textWidth + padding * 2
+            val boxH = textHeight + padding * 2
 
-            val x = screenWidth - textWidth - 10
-            val y = screenHeight - textHeight - 40
-
-            val bgX1 = x - padding
-            val bgY1 = y - padding
-            val bgX2 = x + textWidth + padding
-            val bgY2 = y + textHeight + padding
+            val (boxX, boxY) = positionFor(
+                PositionDraft.anchor, PositionDraft.offsetX, PositionDraft.offsetY,
+                screenWidth, screenHeight, boxW, boxH,
+            )
 
             val bgColor = ARGB.color(0x88, 0x0, 0x0, 0x0)
             val textColor = 0xFFFFFFFF.toInt()
 
-            graphics.fill(bgX1, bgY1, bgX2, bgY2, bgColor)
-            graphics.text(font, textObj, x, y, textColor)
+            graphics.fill(boxX, boxY, boxX + boxW, boxY + boxH, bgColor)
+            graphics.text(font, textObj, boxX + padding, boxY + padding, textColor)
         }
     }
+}
+
+/** Top-left of the tooltip box, kept inside the screen. HUD and editor share it, so a drag shows what renders. */
+fun positionFor(
+    anchor: Anchor,
+    offsetX: Int,
+    offsetY: Int,
+    screenW: Int,
+    screenH: Int,
+    boxW: Int,
+    boxH: Int,
+): Pair<Int, Int> {
+    val (ax, ay) = anchorOrigin(anchor, screenW, screenH, boxW, boxH)
+    val x = (ax + offsetX).coerceIn(0, (screenW - boxW).coerceAtLeast(0))
+    val y = (ay + offsetY).coerceIn(0, (screenH - boxH).coerceAtLeast(0))
+    return x to y
+}
+
+/** Top-left of a box placed flush at [anchor]; offsets are relative to this point. */
+fun anchorOrigin(anchor: Anchor, screenW: Int, screenH: Int, boxW: Int, boxH: Int): Pair<Int, Int> {
+    val freeW = (screenW - boxW).coerceAtLeast(0)
+    val freeH = (screenH - boxH).coerceAtLeast(0)
+    return (freeW * anchor.fractionX).toInt() to (freeH * anchor.fractionY).toInt()
 }
 
 fun Player.getLookingAt(distance: Double): HitResult? {

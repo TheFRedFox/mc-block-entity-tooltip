@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.0+26.1.2] - 2026-11-08
+
+**Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
+
+### Added
+- Configurable tooltip position (issue #26). The config screen has a
+  **Position Editor** entry that opens a live editor screen:
+  - **Preset buttons** as arrows on a 3×3 grid: top left/center/right, middle
+    left / **Below crosshair** (`·`) / middle right, bottom left /
+    **Action bar** (`▣`) / bottom right. Each button sets one of the nine
+    anchors; a frame marks the current anchor.
+  - **Anchor button** cycles through the nine anchors. The box stays in place;
+    only X/Y change to the new anchor.
+  - **Red guide lines** run from the anchor point to the box: the horizontal
+    line is X, the vertical line is Y.
+  - **X / Y inputs** set the offset in GUI pixels from the anchor, so anchor
+    plus X/Y reproduce a position exactly on another device.
+  - **Drag** the sample box anywhere. It attaches to the nearest of the nine
+    anchors.
+  - All controls sit in one compact panel in the screen half away from the
+    box, so the box never covers them.
+  - All three methods preview live. **Cancel** restores the position from
+    when the editor opened.
+  - A faint placeholder shows where vanilla action-bar messages appear.
+- The position is an anchor plus a pixel offset, like vanilla HUD elements. A
+  tooltip keeps its distance to the nearest screen edge at every GUI scale and
+  window size.
+
+### Changed
+- **Default position is now `Action bar`**: centered, 2 px above the line
+  where vanilla shows action-bar messages. This applies to all users,
+  including existing configs. The old fixed placement near the bottom-right
+  corner is gone. Pick `Bottom right` in the editor to get close to it.
+
+### Technical
+- First MINOR feature bump in the project's history (4.9.0 → 4.10.0); the
+  feature digit had been static at `9`.
+- Config fields `anchor`/`offsetX`/`offsetY` are `@ConfigEntry.Gui.Excluded`
+  (serialized, not shown as Cloth fields). Presets are not stored; the editor
+  derives them from the position. An unknown `anchor` value in the config file
+  falls back to the default instead of crashing the HUD.
+- The HUD renders from a `PositionDraft` the editor edits live, so **Done**
+  shows in-game at once. Cloth's "Save & Quit" commits the draft to config
+  (`FreehandEditorEntry.isEdited()`/`save()`). Cloth exposes no discard hook,
+  so a client-tick check re-seeds the draft from config when the draft differs
+  outside the config UI; a discard rolls the in-game position back too.
+- Cloth Config 26.1.x has no native button list-entry; the launcher is a
+  `TextListEntry` subclass registered via `AutoConfigClient.getGuiRegistry` +
+  `registerAnnotationProvider` on a `@FreehandEditorButton` marker field, with
+  bounds captured from `extractRenderState` so it only triggers on its own row.
+- Editor uses the MC 26.1 input/render API (`MouseButtonEvent`, `EditBox`,
+  `extractRenderState(GuiGraphicsExtractor, …)`).
+
 ## [4.9.0+26.1.2] - 2026-05-15
 
 **Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
