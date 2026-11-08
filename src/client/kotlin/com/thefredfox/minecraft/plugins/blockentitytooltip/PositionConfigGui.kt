@@ -59,7 +59,7 @@ class FreehandEditorEntry(label: Component) :
             event.y() >= rowY && event.y() <= rowY + itemHeight
         ) {
             val mc = Minecraft.getInstance()
-            mc.setScreen(PositionEditorScreen(mc.screen))
+            mc.gui.setScreen(PositionEditorScreen(mc.gui.screen()))
             return true
         }
         return super.mouseClicked(event, doubleClick)

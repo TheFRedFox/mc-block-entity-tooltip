@@ -47,7 +47,7 @@ object BlockEntityTooltipClient : ClientModInitializer {
             .registerAnnotationProvider(FREEHAND_GUI_PROVIDER, FreehandEditorButton::class.java)
         // Cloth has no discard hook: a draft that differs outside the config UI means the user discarded.
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val s = client.screen
+            val s = client.gui.screen()
             val inConfigUi = s is AbstractConfigScreen ||
                 s is PositionEditorScreen ||
                 s is ConfirmScreen

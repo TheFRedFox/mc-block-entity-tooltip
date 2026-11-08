@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.1+26.2] - 2026-11-09
+
+**Compatible with Minecraft 26.2**
+
+Same features as `4.10.1+26.1.2`, ported to Minecraft 26.2.
+
+### Changed
+- Migrated to Minecraft 26.2
+- Updated Fabric API to 0.161.0+26.2
+- Updated Cloth Config to 26.2.155
+- Updated ModMenu to 20.0.3
+- **New version scheme:** every MC line now shares one mod version. The MC
+  version is in the `+` suffix, in the jar name and in the Modrinth version
+  number (e.g. `4.10.1+26.2`).
+
+### Technical
+- MC 26.2 moved screen handling from `Minecraft` to `Minecraft.gui`
+  (`gui.screen()`, `gui.setScreen()`).
+- `I18n.exists` is gone; the editor uses `Language.getInstance().has`.
+- `fabric.mod.json` constraints: `minecraft ~26.2`, `cloth-config >=26.2.0`.
+- The `26.1` branch keeps the MC 26.1.x line.
+
 ## [4.10.1+26.1.2] - 2026-11-08
 
 **Compatible with Minecraft 26.1, 26.1.1, and 26.1.2**
