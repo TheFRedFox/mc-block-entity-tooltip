@@ -5,11 +5,11 @@ import static org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 plugins {
     id 'fabric-loom' version '1.16.1'
     id 'maven-publish'
-    id "org.jetbrains.kotlin.jvm" version "2.3.21"
+    id "org.jetbrains.kotlin.jvm" version "2.4.21"
     id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
-version = project.mod_version
+version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
 base {
@@ -67,9 +67,11 @@ dependencies {
 
 processResources {
     inputs.property "version", project.version
+    inputs.property "fabric_kotlin_version", project.fabric_kotlin_version
 
     filesMatching("fabric.mod.json") {
-        expand "version": inputs.properties.version
+        expand "version": inputs.properties.version,
+                "fabric_kotlin_version": inputs.properties.fabric_kotlin_version
     }
 }
 
