@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.1+26.3] - 2026-11-09
+
+**Compatible with Minecraft 26.3**
+
+Same features as `4.10.1+26.2`, ported to Minecraft 26.3.
+
+### Changed
+- Migrated to Minecraft 26.3
+- Updated Fabric API to 0.165.2+26.3
+- Updated Cloth Config to 26.3.159
+- Updated ModMenu to 21.0.0
+
+### Technical
+- MC 26.3 renumbered the mouse buttons (left is now `1`, was `0`). The
+  Position Editor entry and the box drag compare with
+  `InputConstants.MOUSE_BUTTON_LEFT` instead of a literal `0`.
+- `fabric.mod.json` constraints: `minecraft ~26.3`, `cloth-config >=26.3.0`.
+- The `26.2` branch keeps the MC 26.2.x line.
+
 ## [4.10.1+26.2] - 2026-11-09
 
 **Compatible with Minecraft 26.2**
