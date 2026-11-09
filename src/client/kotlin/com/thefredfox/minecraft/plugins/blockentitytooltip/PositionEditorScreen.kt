@@ -1,5 +1,6 @@
 package com.thefredfox.minecraft.plugins.blockentitytooltip
 
+import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
@@ -232,7 +233,7 @@ class PositionEditorScreen(private val parent: Screen?) :
     }
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
-        if (event.button() == 0 && isOverBox(event.x(), event.y())) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && isOverBox(event.x(), event.y())) {
             val b = box()
             draggingBox = true
             grabOffsetX = event.x().toInt() - b.x
@@ -262,7 +263,7 @@ class PositionEditorScreen(private val parent: Screen?) :
     }
 
     override fun mouseReleased(event: MouseButtonEvent): Boolean {
-        if (draggingBox && event.button() == 0) {
+        if (draggingBox && event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             draggingBox = false
             return true
         }
