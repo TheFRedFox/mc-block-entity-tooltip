@@ -74,7 +74,6 @@ fun getNameOfLookedAt(player: Player, distance: Double = 5.0): String? {
         }
 
         HitResult.Type.MISS -> return null
-        null -> return null
     }
 
 }
@@ -86,7 +85,6 @@ class LookingAtRenderer : HudElement {
         }
 
         val client = Minecraft.getInstance()
-            ?: return
         val player = client.player
             ?: return
         val world = client.level
