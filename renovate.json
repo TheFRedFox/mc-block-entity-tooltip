@@ -60,14 +60,14 @@
       "automerge": false
     },
     {
-      "description": "Pin Fabric API to current MC line (+26.2 or +26.2.x suffix). The +<mc> suffix is SemVer build metadata, ignored by default; without this, Renovate proposes builds for the next MC line, which are incompatible. Update this constraint when migrating main to a new MC line.",
+      "description": "Pin Fabric API to current MC line (+26.3 or +26.3.x suffix). The +<mc> suffix is SemVer build metadata, ignored by default; without this, Renovate proposes builds for the next MC line, which are incompatible. Update this constraint when migrating main to a new MC line.",
       "matchPackageNames": ["net.fabricmc.fabric-api:fabric-api"],
-      "allowedVersions": "/^.*\\+26\\.2(\\.[0-9]+)?$/"
+      "allowedVersions": "/^.*\\+26\\.3(\\.[0-9]+)?$/"
     },
     {
-      "description": "Pin Minecraft to current MC line (26.2.x). Uses the mojang-minecraft custom datasource (Mojang's version manifest is not a Maven repo). Update this constraint when migrating main to a new MC line.",
+      "description": "Pin Minecraft to current MC line (26.3.x). Uses the mojang-minecraft custom datasource (Mojang's version manifest is not a Maven repo). Update this constraint when migrating main to a new MC line.",
       "matchDatasources": ["custom.mojang-minecraft"],
-      "allowedVersions": "/^26\\.2(\\.[0-9]+)?$/"
+      "allowedVersions": "/^26\\.3(\\.[0-9]+)?$/"
     }
   ],
   "prHourlyLimit": 3,

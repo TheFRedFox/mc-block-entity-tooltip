@@ -54,7 +54,7 @@ If the IDE-launched client appears to use a stale Minecraft version or stale res
 
 ## Important Configuration
 
-### Version Information (current `main` — MC 26.2.x line)
+### Version Information (current `main` — MC 26.3.x line)
 Concrete version numbers (Minecraft, Fabric Loader, Kotlin, Fabric Loom, Gradle)
 live in `gradle.properties` and `build.gradle` — the single source of truth; do
 not duplicate them here.
@@ -92,7 +92,8 @@ Each MC compatibility tier lives on a branch named after the lowest MC version i
 
 | Branch | MC range | Mod version line |
 |---|---|---|
-| `main` | 26.2.x | shared (`4.10.1+26.2`) |
+| `main` | 26.3.x | shared (`4.10.1+26.3`) |
+| `26.2` | 26.2.x | shared (`4.10.1+26.2`) |
 | `26.1` | 26.1–26.1.2 | `4.x.x` |
 | `1.21.11` | 1.21.11 | `3.x.x` |
 | `1.21.9` | 1.21.9–1.21.10 | `2.x.x` |
