@@ -1,5 +1,6 @@
 package com.thefredfox.minecraft.plugins.blockentitytooltip
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.shedaniel.autoconfig.gui.registry.api.GuiProvider
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry
 import me.shedaniel.clothconfig2.gui.entries.TextListEntry
@@ -54,7 +55,7 @@ class FreehandEditorEntry(label: Component) :
     }
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
-        if (event.button() == 0 &&
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT &&
             event.x() >= rowX && event.x() <= rowX + rowW &&
             event.y() >= rowY && event.y() <= rowY + itemHeight
         ) {
