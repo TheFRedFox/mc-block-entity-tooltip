@@ -52,7 +52,7 @@
 		"minecraft": "~1.21.3",
 		"java": ">=21",
 		"fabric-api": "*",
-		"fabric-language-kotlin": "*",
+		"fabric-language-kotlin": ">=${fabric_kotlin_version}",
 		"cloth-config": ">=16.0.143",
 		"modmenu": "*"
 	}
